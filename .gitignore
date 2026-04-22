@@ -1,0 +1,17 @@
+# API keys y configuración sensible
+.env
+
+# Outputs generados y datos de prueba
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Entornos virtuales
+venv/
+.venv/
+
+# VS Code
+.vscode/
