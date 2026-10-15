@@ -54,7 +54,7 @@ CONTRATOS/
 ## Installation
 
 ```bash
-pip install pdfplumber pdf2image pytesseract google-genai anthropic openai python-dotenv reportlab
+pip install -r requirements.txt
 ```
 
 For OCR support, Tesseract must be installed on the system:

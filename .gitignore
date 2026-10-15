@@ -15,3 +15,7 @@ venv/
 
 # VS Code
 .vscode/
+
+# Workspace y config local
+*.code-workspace
+CLAUDE.md

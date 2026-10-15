@@ -1,0 +1,8 @@
+pdfplumber
+pdf2image
+pytesseract
+google-genai
+anthropic
+openai
+python-dotenv
+reportlab
