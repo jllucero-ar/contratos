@@ -57,10 +57,17 @@ CONTRATOS/
 pip install -r requirements.txt
 ```
 
-For OCR support, Tesseract must be installed on the system:
-- Windows: [tesseract-ocr installer](https://github.com/tesseract-ocr/tesseract)
+For OCR support (scanned PDFs), two system dependencies are required in addition to the Python packages. Both must be available on your `PATH`:
+
+**Tesseract** (OCR engine, with the Spanish language pack `spa`):
+- Windows: [tesseract-ocr installer](https://github.com/UB-Mannheim/tesseract/wiki) (select Spanish during setup)
 - Linux: `sudo apt install tesseract-ocr tesseract-ocr-spa`
-- Mac: `brew install tesseract`
+- Mac: `brew install tesseract tesseract-lang`
+
+**Poppler** (used by `pdf2image` to convert PDF pages to images):
+- Windows: download the [Poppler binaries](https://github.com/oschwartz10612/poppler-windows/releases), extract them and add the `Library\bin` folder to your `PATH`
+- Linux: `sudo apt install poppler-utils`
+- Mac: `brew install poppler`
 
 ---
 
