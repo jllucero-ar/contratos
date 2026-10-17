@@ -13,7 +13,7 @@ Built as part of a legal engineering portfolio.
 3. **Outputs** a structured JSON file and a formatted PDF report
 
 The analysis covers:
-- Parties and identification (name, tax ID)
+- Parties and identification (`parte_a` / `parte_b`: name, tax ID, role — works for any contract type)
 - Object and purpose
 - Term and renewal conditions
 - Price and adjustment mechanisms
@@ -39,12 +39,16 @@ The analysis covers:
 CONTRATOS/
 ├── core/
 │   ├── extractor.py       # PDF text extraction (pdfplumber + OCR fallback)
-│   ├── ia_client.py       # Unified AI client (Claude / OpenAI / Gemini)
+│   ├── ia_client.py       # Unified AI client (Claude / OpenAI / Gemini), truncation + token usage
+│   ├── anonimizador.py    # Reversible masking of DNI / CUIT / CUIL / email / phone
+│   ├── controles.py       # Deterministic checks (CCyCN citation verification)
+│   ├── audit_log.py       # JSONL audit log (no contract text, no personal data)
 │   └── pdf_report.py      # PDF report generator
 ├── contratos/
-│   └── analizador.py      # Contract-specific prompt and JSON schema
-├── data/
-│   └── test/              # Sample contracts for testing
+│   ├── analizador.py      # Pipeline, prompt and PROMPT_VERSION
+│   └── esquema.py         # Pydantic output schema
+├── tests/                 # pytest suite (all AI calls are mocked)
+├── data/                  # git-ignored: test/, json/, pdf/, logs/
 ├── main.py                # Entry point
 └── .env                   # API keys and provider config (not committed)
 ```
@@ -82,6 +86,8 @@ ANTHROPIC_API_KEY=your-key-here
 
 Supported providers: `anthropic`, `openai`, `gemini`
 
+`IA_MAX_TOKENS` (default `8000`) sets the output token limit. If a response is cut off by that limit the run fails with a specific "truncated" error instead of returning broken JSON.
+
 ---
 
 ## Usage
@@ -97,6 +103,93 @@ python main.py data/test/contrato1.pdf data/test/contrato2.pdf
 ```
 
 Output files are saved automatically to `data/json/` and `data/pdf/`.
+
+---
+
+## Governance controls
+
+The model is probabilistic; these controls around it are deterministic and auditable. Each one is small on purpose and states what it does **not** guarantee.
+
+| Control | What it does | Why it exists |
+|---|---|---|
+| **Schema validation** (`contratos/esquema.py`) | The model output is validated against a Pydantic schema (all keys required, unknown keys rejected, `null` allowed for missing data). On failure it retries **once**, sending the model the validation errors (paths and messages only, never the offending values). A second failure returns a clear error. | A "valid-looking" answer can silently miss fields or invent new ones. Downstream code (PDF, automation) needs a contract it can trust. |
+| **Truncation detection** (`core/ia_client.py`) | Reads `stop_reason` (Anthropic), `finish_reason` (OpenAI) and the Gemini finish reason. A response cut by the token limit is reported as its own error and is not retried. | A truncated JSON is the most common cause of confusing "invalid JSON" failures; naming it makes it fixable (`IA_MAX_TOKENS`). |
+| **Citation check** (`core/controles.py`) | Extracts every CCyCN article citation from the output and flags those outside **1–2671** or with an unrecognizable format (`art. XX`, `art. 1198 bis`). Citations to other statutes (e.g. Ley 24.240) are counted but not validated. Result goes in the `controles` block. | The prompt requires legal grounding, and models fabricate article numbers. A range check catches the impossible ones cheaply. It **informs, it does not block**. |
+| **Anonymization** (`core/anonimizador.py`) | Before calling the provider, DNI, CUIT, CUIL, emails and phones are replaced by markers (`[DNI_1]`, `[CUIT_1]`, ...). The marker→value map exists only in memory for that run and the real values are restored in the final JSON. The result reports how many distinct values of each type were masked and whether any marker was left unrestored. | Data minimization: the provider does not need identifiers to analyze clauses. |
+| **Audit log** (`core/audit_log.py`) | One JSONL line per run in `data/logs/analisis_YYYYMMDD.jsonl`: timestamp, provider, model, `PROMPT_VERSION`, SHA-256 of the PDF, token counts, attempts, result of each control, success or error code. Failed runs are logged too. | Reproducibility and traceability: you can tell which prompt version, model and input produced a given result, and compare behavior across versions. |
+
+`PROMPT_VERSION` (in `contratos/analizador.py`) must be bumped whenever the system prompt, the schema or the prompt builder changes.
+
+### What these controls do NOT do
+
+- **Citation check verifies existence and format only.** An article number inside 1–2671 passes even if that article says nothing relevant to the claim. Content accuracy still needs a human (or a separate evaluation step).
+- **Anonymization covers five identifier types only.** Names, addresses, amounts and any other contract text are still sent to the provider. Detection is regex-based and deliberately conservative (phones need a label, `+54` or an area code starting with `0`; DNI needs a label), so unusual formats can slip through.
+- **The audit log never stores contract text or personal data**, only the PDF hash, counters and error *codes* (never free-form error messages, which may echo contract fragments). `data/` is git-ignored.
+- Schema validation checks structure, not truth.
+
+### Example output (fictitious data)
+
+```json
+{
+  "partes": {
+    "parte_a": {"nombre": "Inversiones del Sur S.A.", "identificacion": "CUIT 30-71234567-8", "rol": "locador"},
+    "parte_b": {"nombre": "María Ejemplo", "identificacion": "DNI 12.345.678", "rol": "locatario"}
+  },
+  "objeto": "Locación de un local comercial.",
+  "plazo": {
+    "inicio": "1 de abril de 2025",
+    "vencimiento": "31 de marzo de 2028",
+    "duracion": "36 meses",
+    "observaciones": null
+  },
+  "canon": {
+    "monto_inicial": "$250.000 mensuales",
+    "ajuste": "Trimestral por IPC",
+    "vencimiento_pago": "Primeros 5 días hábiles"
+  },
+  "clausulas": {
+    "rescision": "Preaviso de 60 días.",
+    "mora": "Mora automática.",
+    "limitacion_responsabilidad": null,
+    "jurisdiccion": "Tribunales ordinarios de CABA.",
+    "notificaciones": "Carta documento. Contacto: maria@ejemplo.example"
+  },
+  "riesgos": [
+    "La mora automática sin interpelación contradice la regla general (art. 886 CCyCN).",
+    "Cláusula de actualización cuestionable (art. 9999 CCyCN)."
+  ],
+  "observaciones_generales": "Locación comercial estándar con ajuste por IPC (art. 1187 CCyCN).",
+  "controles": {
+    "citas_ccycn": {
+      "encontradas": ["886", "9999", "1187"],
+      "invalidas": [{"cita": "9999", "motivo": "fuera_de_rango"}],
+      "otras_normas_no_verificadas": 0,
+      "paso": false
+    },
+    "paso": false
+  },
+  "anonimizacion": {
+    "por_tipo": {"EMAIL": 1, "CUIT": 1, "DNI": 1},
+    "total": 3,
+    "marcadores_sin_restaurar": 0
+  }
+}
+```
+
+And the matching audit log line:
+
+```json
+{"timestamp": "2026-10-17T17:22:11+00:00", "proveedor": "anthropic", "modelo": "claude-opus-4-5", "prompt_version": "2.0", "pdf_sha256": "46fbda2b...a280b28", "tokens": {"entrada": 1850, "salida": 420}, "intentos": 1, "controles": {"esquema_valido": true, "respuesta_completa": true, "citas_ccycn": {"paso": false, "encontradas": 3, "invalidas": 1}, "anonimizacion": {"por_tipo": {"EMAIL": 1, "CUIT": 1, "DNI": 1}, "total": 3, "marcadores_sin_restaurar": 0}}, "exito": true, "error_codigo": null}
+```
+
+### Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+No test calls a real API: the provider SDKs and the analyzer's AI call are mocked, and all sample data is fictitious.
 
 ---
 
