@@ -15,11 +15,17 @@ sys.path.append(str(Path(__file__).parent.parent))
 from pydantic import ValidationError
 
 from contratos.esquema import AnalisisContrato, plantilla_json, resumir_errores
+from core import audit_log
 from core.anonimizador import Anonimizador
 from core.controles import verificar_citas_ccycn
 from core.extractor import extraer_texto
 from core.ia_client import llamar_ia
 from core.pdf_report import generar_reporte
+
+
+# Subir SIEMPRE que cambie SISTEMA, el esquema (contratos/esquema.py) o _construir_prompt.
+# 1.0 = prompt original (sin versionar) · 2.0 = esquema Pydantic genérico (parte_a/parte_b), JSON con todas las claves
+PROMPT_VERSION = "2.0"
 
 
 # --- Prompt del sistema ---
@@ -35,7 +41,37 @@ Reglas estrictas:
 - Las observaciones generales deben ser un resumen ejecutivo de no más de 3 oraciones, con referencia a la normativa aplicable."""
 
 
-def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_pdf: str = None) -> dict:
+def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_pdf: str = None,
+                      dir_logs: str = None) -> dict:
+    """
+    Ejecuta el pipeline y registra una línea de auditoría (data/logs/*.jsonl) por análisis,
+    haya salido bien o mal. El log no contiene texto del contrato ni datos personales.
+    """
+    meta = {"intentos": 0, "esquema_valido": False, "respuesta_completa": True,
+            "citas_ccycn": None, "anonimizacion": None}
+    resultado = _pipeline(path_pdf, path_output_json, path_output_pdf, meta)
+
+    try:
+        registro = audit_log.construir_registro(
+            proveedor=meta.get("proveedor"),
+            modelo=meta.get("modelo"),
+            prompt_version=PROMPT_VERSION,
+            pdf_sha256=audit_log.hash_pdf(path_pdf),
+            tokens_entrada=meta.get("tokens_entrada"),
+            tokens_salida=meta.get("tokens_salida"),
+            intentos=meta["intentos"],
+            controles={k: meta[k] for k in ("esquema_valido", "respuesta_completa", "citas_ccycn", "anonimizacion")},
+            exito=resultado["exito"],
+            error_codigo=meta.get("error_codigo"),
+        )
+        audit_log.registrar(registro, dir_logs)
+    except Exception as e:  # el log nunca debe romper el análisis
+        print(f"[analizador] ✗ No se pudo escribir el log de auditoría: {type(e).__name__}")
+
+    return resultado
+
+
+def _pipeline(path_pdf: str, path_output_json: str, path_output_pdf: str, meta: dict) -> dict:
     """
     Pipeline completo: extrae texto del PDF → llama a la IA → guarda JSON → genera PDF.
 
@@ -58,6 +94,7 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
     extraccion = extraer_texto(path_pdf)
 
     if not extraccion["exito"]:
+        meta["error_codigo"] = "extraccion"
         return _error(f"Error en extracción: {extraccion['error']}")
 
     print(f"[analizador] ✓ Texto extraído ({extraccion['paginas']} páginas, método: {extraccion['metodo']})")
@@ -70,7 +107,7 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
 
     # 3. Llamar a la IA y validar contra el esquema (1 reintento con el error de validación)
     prompt = _construir_prompt(texto_anonimo)
-    datos, error = _obtener_analisis(prompt)
+    datos, error = _obtener_analisis(prompt, meta)
     if error:
         return _error(error)
 
@@ -79,6 +116,8 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
     # 4. Controles determinísticos sobre la respuesta aún anonimizada (informan, no bloquean)
     datos["controles"] = _ejecutar_controles(datos)
     citas = datos["controles"]["citas_ccycn"]
+    meta["citas_ccycn"] = {"paso": citas["paso"], "encontradas": len(citas["encontradas"]),
+                           "invalidas": len(citas["invalidas"])}
     if citas["paso"]:
         print(f"[analizador] ✓ Citas CCyCN: {len(citas['encontradas'])} encontradas, 0 inválidas")
     else:
@@ -91,6 +130,7 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
         "total": sum(anonimizador.conteo.values()),
         "marcadores_sin_restaurar": anonimizador.contar_marcadores(datos),
     }
+    meta["anonimizacion"] = dict(datos["anonimizacion"])
 
     resultado = {"datos": datos, "json_path": None, "pdf_path": None, "exito": True, "error": None}
 
@@ -117,25 +157,40 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
     return resultado
 
 
-def _obtener_analisis(prompt: str) -> tuple[dict | None, str | None]:
-    """Llama a la IA y valida. Devuelve (datos, None) o (None, mensaje_de_error)."""
+def _obtener_analisis(prompt: str, meta: dict = None) -> tuple[dict | None, str | None]:
+    """
+    Llama a la IA y valida. Devuelve (datos, None) o (None, mensaje_de_error).
+    Si se pasa `meta`, se completa con datos para el log (proveedor, modelo, tokens, intentos, código de error).
+    """
+    meta = meta if meta is not None else {}
     prompt_actual = prompt
     ultimo_error = ""
 
     for intento in (1, 2):
         print(f"[analizador] Enviando a IA para análisis (intento {intento}/2)...")
         respuesta_ia = llamar_ia(prompt=prompt_actual, sistema=SISTEMA)
+        meta["intentos"] = intento
+        meta["proveedor"] = respuesta_ia.get("proveedor")
+        meta["modelo"] = respuesta_ia.get("modelo")
+        for clave, k in (("tokens_entrada", "entrada"), ("tokens_salida", "salida")):
+            nuevo = (respuesta_ia.get("tokens") or {}).get(k)
+            if nuevo is not None:
+                meta[clave] = (meta.get(clave) or 0) + nuevo
 
         if not respuesta_ia["exito"]:
+            meta["error_codigo"] = "proveedor"
             return None, f"Error en IA: {respuesta_ia['error']}"
 
         if respuesta_ia.get("truncada"):
+            meta["respuesta_completa"] = False
+            meta["error_codigo"] = "truncada"
             return None, "Respuesta truncada por límite de tokens. Aumentá IA_MAX_TOKENS en .env."
 
         print(f"[analizador] ✓ Respuesta recibida (proveedor: {respuesta_ia['proveedor']})")
 
         datos, ultimo_error = _validar(respuesta_ia["respuesta"])
         if datos is not None:
+            meta["esquema_valido"] = True
             return datos, None
 
         print(f"[analizador] ✗ Validación fallida:\n{ultimo_error}")
@@ -145,6 +200,7 @@ def _obtener_analisis(prompt: str) -> tuple[dict | None, str | None]:
             "Corregí los errores y respondé ÚNICAMENTE con el JSON completo y válido."
         )
 
+    meta["error_codigo"] = "esquema_invalido"
     return None, f"La respuesta de la IA no cumple el esquema tras 2 intentos:\n{ultimo_error}"
 
 
