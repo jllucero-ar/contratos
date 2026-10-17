@@ -15,6 +15,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from pydantic import ValidationError
 
 from contratos.esquema import AnalisisContrato, plantilla_json, resumir_errores
+from core.controles import verificar_citas_ccycn
 from core.extractor import extraer_texto
 from core.ia_client import llamar_ia
 from core.pdf_report import generar_reporte
@@ -67,6 +68,14 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
         return _error(error)
 
     print("[analizador] ✓ Respuesta validada contra el esquema")
+
+    # 3. Controles determinísticos (informan, no bloquean)
+    datos["controles"] = _ejecutar_controles(datos)
+    citas = datos["controles"]["citas_ccycn"]
+    if citas["paso"]:
+        print(f"[analizador] ✓ Citas CCyCN: {len(citas['encontradas'])} encontradas, 0 inválidas")
+    else:
+        print(f"[analizador] ⚠ Citas CCyCN inválidas: {[i['cita'] for i in citas['invalidas']]}")
 
     resultado = {"datos": datos, "json_path": None, "pdf_path": None, "exito": True, "error": None}
 
@@ -122,6 +131,12 @@ def _obtener_analisis(prompt: str) -> tuple[dict | None, str | None]:
         )
 
     return None, f"La respuesta de la IA no cumple el esquema tras 2 intentos:\n{ultimo_error}"
+
+
+def _ejecutar_controles(datos: dict) -> dict:
+    """Bloque `controles` del resultado. Cada control tiene su `paso`; `paso` global = todos."""
+    citas = verificar_citas_ccycn({k: v for k, v in datos.items() if k != "controles"})
+    return {"citas_ccycn": citas, "paso": citas["paso"]}
 
 
 def _validar(texto: str) -> tuple[dict | None, str]:

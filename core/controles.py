@@ -1,0 +1,139 @@
+"""
+controles.py — core/controles.py
+Controles determinísticos sobre la respuesta del modelo.
+
+Verificación de citas del CCyCN: solo EXISTENCIA y FORMATO (el artículo está entre 1 y 2671
+y está escrito de forma reconocible). NO verifica que el contenido del artículo respalde
+lo que afirma el análisis.
+"""
+
+import re
+
+ART_MIN = 1
+ART_MAX = 2671  # último artículo del CCyCN (Ley 26.994)
+
+# "art.", "arts.", "artículo(s)" + lista de números: "765", "765, 766 y 767", "765 a 767"
+_RE_ARTICULOS = re.compile(
+    r"\b(?:arts?(?:\.\s*|\s+)|art[ií]culos?\s+)"
+    r"(?P<lista>[\w.º°]+(?:\s*(?:,|\by\b|\be\b|\bal?\b|-|–)\s*\d[\w.º°]*)*)",
+    re.IGNORECASE,
+)
+_RE_SEPARADOR = re.compile(r"\s*(?P<sep>,|\by\b|\be\b|\bal?\b|-|–)\s*", re.IGNORECASE)
+_RE_NUMERO = re.compile(r"^\d{1,3}(?:\.\d{3})+$|^\d+$")
+
+_RE_CCYCN = re.compile(
+    r"\bCCyCN\b|\bCCCN\b|\bCC\s?y\s?C\b|\bC\.?\s?C\.?\s?y\s?C\.?\s?N\.?|C[óo]digo\s+Civil\s+y\s+Comercial",
+    re.IGNORECASE,
+)
+_RE_OTRA_NORMA = re.compile(
+    r"\b(?:ley|leyes|decreto|dnu|resoluci[óo]n|c[óo]digo\s+(?:procesal|penal|de\s+comercio|aduanero)|"
+    r"cpccn|constituci[óo]n|c\.?n\.?)\b",
+    re.IGNORECASE,
+)
+_RE_SUFIJO = re.compile(r"\s*(?:bis|ter|quater)\b", re.IGNORECASE)  # el CCyCN no tiene artículos "bis"/"ter"
+
+_VENTANA_ANTES = 30
+_VENTANA_DESPUES = 60
+_GAP_HEREDA = 8  # "arts. 1198 y art. 1199 CCyCN": el 1° hereda la norma del 2°
+
+
+def extraer_strings(obj) -> list[str]:
+    """Todos los strings de un dict/lista anidado."""
+    if isinstance(obj, str):
+        return [obj]
+    if isinstance(obj, dict):
+        return [s for v in obj.values() for s in extraer_strings(v)]
+    if isinstance(obj, (list, tuple)):
+        return [s for v in obj for s in extraer_strings(v)]
+    return []
+
+
+def verificar_citas_ccycn(datos) -> dict:
+    """
+    Extrae las citas de artículos del CCyCN de todos los strings de `datos` y marca las inválidas.
+
+    Solo se validan las citas atribuibles al CCyCN (mencionan "CCyCN" o "Código Civil y Comercial"
+    junto a la cita). Las de otras normas (Ley 24.240, etc.) se cuentan sin validar.
+
+    Returns:
+        {"encontradas": [str], "invalidas": [{"cita": str, "motivo": str}],
+         "otras_normas_no_verificadas": int, "paso": bool}
+    """
+    encontradas: list[str] = []
+    invalidas: list[dict] = []
+    otras = 0
+
+    for texto in extraer_strings(datos):
+        for cita in _extraer_citas(texto):
+            if cita["norma"] != "ccycn":
+                otras += 1
+                continue
+            if cita["valor"] not in encontradas:
+                encontradas.append(cita["valor"])
+            if cita["motivo"] and not any(i["cita"] == cita["valor"] for i in invalidas):
+                invalidas.append({"cita": cita["valor"], "motivo": cita["motivo"]})
+
+    return {
+        "encontradas": encontradas,
+        "invalidas": invalidas,
+        "otras_normas_no_verificadas": otras,
+        "paso": not invalidas,
+    }
+
+
+def _extraer_citas(texto: str) -> list[dict]:
+    """Devuelve [{"valor", "motivo", "norma"}] para cada artículo citado en `texto`."""
+    matches = list(_RE_ARTICULOS.finditer(texto))
+    normas: list[str] = [""] * len(matches)
+
+    # De atrás hacia adelante, para que una cita pueda heredar la norma de la siguiente
+    for i in range(len(matches) - 1, -1, -1):
+        m = matches[i]
+        fin_ventana = matches[i + 1].start() if i + 1 < len(matches) else len(texto)
+        despues = texto[m.end():min(fin_ventana, m.end() + _VENTANA_DESPUES)]
+        ini_antes = matches[i - 1].end() if i > 0 else 0
+        antes = texto[max(ini_antes, m.start() - _VENTANA_ANTES):m.start()]
+
+        if _RE_CCYCN.search(despues):
+            normas[i] = "ccycn"
+        elif _RE_OTRA_NORMA.search(despues):
+            normas[i] = "otra"
+        elif i + 1 < len(matches) and len(despues.strip(" ,;y")) <= _GAP_HEREDA:
+            normas[i] = normas[i + 1]
+        elif _RE_CCYCN.search(antes):
+            normas[i] = "ccycn"
+        else:
+            normas[i] = "otra"
+
+    citas = []
+    for m, norma in zip(matches, normas):
+        items = _analizar_lista(m.group("lista"))
+        if items and _RE_SUFIJO.match(texto, m.end()):
+            items[-1] = (items[-1][0], "formato_irreconocible")
+        for valor, motivo in items:
+            citas.append({"valor": valor, "motivo": motivo, "norma": norma})
+    return citas
+
+
+def _analizar_lista(lista: str) -> list[tuple[str, str | None]]:
+    """Convierte '765, 766 y 767' en [(valor_normalizado, motivo_o_None), ...]."""
+    tokens = re.split(_RE_SEPARADOR, lista)  # [tok, sep, tok, sep, ...]
+    resultado = []
+
+    for idx in range(0, len(tokens), 2):
+        tok = tokens[idx].strip().rstrip(".")
+        tok = tok.replace("º", "").replace("°", "")
+
+        if not any(c.isdigit() for c in tok):
+            if idx > 0 or (tok.isalpha() and tok.islower()):
+                break  # palabra común ("siguientes", "pertinentes", ...): no es una cita
+
+        if not _RE_NUMERO.match(tok):
+            resultado.append((tok, "formato_irreconocible"))
+            continue
+
+        numero = int(tok.replace(".", ""))
+        motivo = None if ART_MIN <= numero <= ART_MAX else "fuera_de_rango"
+        resultado.append((str(numero), motivo))
+
+    return resultado
