@@ -13,6 +13,18 @@ load_dotenv()
 
 PROVEEDOR = os.getenv("IA_PROVEEDOR", "anthropic").lower()
 
+# Límite de tokens de salida (configurable en .env). 8000 entra en el techo
+# de salida de los tres proveedores por defecto (gemini-2.0-flash: 8192).
+MAX_TOKENS_DEFAULT = 8000
+
+
+def _max_tokens_env() -> int:
+    try:
+        valor = int(os.getenv("IA_MAX_TOKENS", MAX_TOKENS_DEFAULT))
+        return valor if valor > 0 else MAX_TOKENS_DEFAULT
+    except ValueError:
+        return MAX_TOKENS_DEFAULT
+
 # Modelos por defecto por proveedor
 MODELOS_DEFAULT = {
     "anthropic": "claude-opus-4-5",
@@ -21,23 +33,27 @@ MODELOS_DEFAULT = {
 }
 
 
-def llamar_ia(prompt: str, sistema: str = "", max_tokens: int = 2000) -> dict:
+def llamar_ia(prompt: str, sistema: str = "", max_tokens: int = None) -> dict:
     """
     Llama al proveedor de IA configurado en .env y devuelve la respuesta.
 
     Args:
         prompt:     mensaje del usuario
         sistema:    instrucción de sistema (rol, formato esperado, etc.)
-        max_tokens: límite de tokens en la respuesta
+        max_tokens: límite de tokens en la respuesta (default: IA_MAX_TOKENS de .env)
 
     Returns:
         dict con:
             - respuesta: string con el texto devuelto por la IA
             - proveedor: nombre del proveedor usado
             - modelo:    nombre del modelo usado
+            - truncada:  bool, True si la respuesta se cortó por límite de tokens
+            - tokens:    dict {"entrada": int|None, "salida": int|None}
             - exito:     bool
             - error:     str o None
     """
+    if max_tokens is None:
+        max_tokens = _max_tokens_env()
     try:
         if PROVEEDOR == "anthropic":
             return _llamar_anthropic(prompt, sistema, max_tokens)
@@ -72,9 +88,15 @@ def _llamar_anthropic(prompt: str, sistema: str, max_tokens: int) -> dict:
         kwargs["system"] = sistema
 
     respuesta = cliente.messages.create(**kwargs)
-    texto = respuesta.content[0].text
+    texto = "".join(b.text for b in respuesta.content if getattr(b, "type", "text") == "text")
+    uso = getattr(respuesta, "usage", None)
 
-    return _resultado_ok(texto, "anthropic", modelo)
+    return _resultado_ok(
+        texto, "anthropic", modelo,
+        truncada=(respuesta.stop_reason == "max_tokens"),
+        tokens_entrada=getattr(uso, "input_tokens", None),
+        tokens_salida=getattr(uso, "output_tokens", None),
+    )
 
 
 # --- OpenAI ---
@@ -99,9 +121,16 @@ def _llamar_openai(prompt: str, sistema: str, max_tokens: int) -> dict:
         max_tokens=max_tokens,
         messages=mensajes
     )
-    texto = respuesta.choices[0].message.content
+    eleccion = respuesta.choices[0]
+    texto = eleccion.message.content or ""
+    uso = getattr(respuesta, "usage", None)
 
-    return _resultado_ok(texto, "openai", modelo)
+    return _resultado_ok(
+        texto, "openai", modelo,
+        truncada=(eleccion.finish_reason == "length"),
+        tokens_entrada=getattr(uso, "prompt_tokens", None),
+        tokens_salida=getattr(uso, "completion_tokens", None),
+    )
 
 
 # --- Google Gemini ---
@@ -127,18 +156,29 @@ def _llamar_gemini(prompt: str, sistema: str, max_tokens: int) -> dict:
         contents=prompt,
         config=config
     )
-    texto = respuesta.text
+    texto = respuesta.text or ""
+    candidatos = getattr(respuesta, "candidates", None) or []
+    finish = getattr(candidatos[0], "finish_reason", None) if candidatos else None
+    uso = getattr(respuesta, "usage_metadata", None)
 
-    return _resultado_ok(texto, "gemini", modelo)
+    return _resultado_ok(
+        texto, "gemini", modelo,
+        truncada=("MAX_TOKENS" in str(finish).upper()),
+        tokens_entrada=getattr(uso, "prompt_token_count", None),
+        tokens_salida=getattr(uso, "candidates_token_count", None),
+    )
 
 
 # --- Helpers ---
 
-def _resultado_ok(respuesta: str, proveedor: str, modelo: str) -> dict:
+def _resultado_ok(respuesta: str, proveedor: str, modelo: str,
+                  truncada: bool = False, tokens_entrada=None, tokens_salida=None) -> dict:
     return {
         "respuesta": respuesta,
         "proveedor": proveedor,
         "modelo":    modelo,
+        "truncada":  truncada,
+        "tokens":    {"entrada": tokens_entrada, "salida": tokens_salida},
         "exito":     True,
         "error":     None
     }
@@ -148,6 +188,8 @@ def _resultado_error(mensaje: str) -> dict:
         "respuesta": "",
         "proveedor": PROVEEDOR,
         "modelo":    None,
+        "truncada":  False,
+        "tokens":    {"entrada": None, "salida": None},
         "exito":     False,
         "error":     mensaje
     }

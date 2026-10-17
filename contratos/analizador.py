@@ -92,10 +92,13 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
     # 2. Llamar a la IA
     print("[analizador] Enviando a IA para análisis...")
     prompt = _construir_prompt(extraccion["texto"])
-    respuesta_ia = llamar_ia(prompt=prompt, sistema=SISTEMA, max_tokens=2000)
+    respuesta_ia = llamar_ia(prompt=prompt, sistema=SISTEMA)
 
     if not respuesta_ia["exito"]:
         return _error(f"Error en IA: {respuesta_ia['error']}")
+
+    if respuesta_ia.get("truncada"):
+        return _error("Respuesta truncada por límite de tokens. Aumentá IA_MAX_TOKENS en .env.")
 
     print(f"[analizador] ✓ Respuesta recibida (proveedor: {respuesta_ia['proveedor']})")
 
