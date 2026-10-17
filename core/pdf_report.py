@@ -129,12 +129,12 @@ def _construir_contenido(datos: dict, estilos: dict) -> list:
     # --- Partes ---
     _agregar_seccion(historia, "PARTES", estilos)
     partes = datos.get("partes", {})
-    _agregar_campo(historia, "Locador / parte A", partes.get("locador") or partes.get("parte_a", "—"), estilos)
-    _agregar_campo(historia, "Locatario / parte B", partes.get("locatario") or partes.get("parte_b", "—"), estilos)
+    _agregar_campo(historia, "Parte A", _fmt_parte(partes.get("parte_a") or partes.get("locador")), estilos)
+    _agregar_campo(historia, "Parte B", _fmt_parte(partes.get("parte_b") or partes.get("locatario")), estilos)
 
     # --- Objeto ---
     _agregar_seccion(historia, "OBJETO", estilos)
-    historia.append(Paragraph(datos.get("objeto", "—"), estilos["cuerpo"]))
+    historia.append(Paragraph(datos.get("objeto") or "—", estilos["cuerpo"]))
 
     # --- Plazo ---
     _agregar_seccion(historia, "PLAZO Y VIGENCIA", estilos)
@@ -200,17 +200,29 @@ def _agregar_seccion(historia: list, titulo: str, estilos: dict):
     historia.append(HRFlowable(width="100%", thickness=0.5, color=COLOR_SECUNDARIO, spaceAfter=6))
 
 
+def _fmt_parte(parte) -> str:
+    """Acepta el formato nuevo (dict nombre/identificacion/rol) o un string (formato viejo)."""
+    if not parte:
+        return "—"
+    if isinstance(parte, str):
+        return parte
+    texto = ", ".join(x for x in (parte.get("nombre"), parte.get("identificacion")) if x)
+    if parte.get("rol"):
+        texto = f"{texto} ({parte['rol']})" if texto else parte["rol"]
+    return texto or "—"
+
+
 def _agregar_campo(historia: list, etiqueta: str, valor: str, estilos: dict):
     historia.append(Paragraph(etiqueta.upper(), estilos["etiqueta"]))
-    historia.append(Paragraph(str(valor), estilos["cuerpo"]))
+    historia.append(Paragraph(str(valor) if valor else "—", estilos["cuerpo"]))
 
 
 # --- Test rápido con datos de ejemplo ---
 if __name__ == "__main__":
     datos_ejemplo = {
         "partes": {
-            "locador": "INVERSIONES DEL SUR S.A., CUIT 30-71234567-8",
-            "locatario": "COMERCIAL PATAGONIA S.R.L., CUIT 30-68901234-5"
+            "parte_a": {"nombre": "INVERSIONES DEL SUR S.A.", "identificacion": "CUIT 30-71234567-8", "rol": "locador"},
+            "parte_b": {"nombre": "COMERCIAL PATAGONIA S.R.L.", "identificacion": "CUIT 30-68901234-5", "rol": "locatario"}
         },
         "objeto": "Local comercial en Av. Rivadavia 2345, PB, CABA. 120 m². Destino: indumentaria y accesorios.",
         "plazo": {

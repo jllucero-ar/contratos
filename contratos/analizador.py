@@ -12,41 +12,12 @@ from datetime import datetime
 # Agregar el directorio padre al path para importar core
 sys.path.append(str(Path(__file__).parent.parent))
 
+from pydantic import ValidationError
+
+from contratos.esquema import AnalisisContrato, plantilla_json, resumir_errores
 from core.extractor import extraer_texto
 from core.ia_client import llamar_ia
 from core.pdf_report import generar_reporte
-
-
-# --- Esquema JSON esperado ---
-ESQUEMA = {
-    "partes": {
-        "locador": "nombre y CUIT/DNI de quien da en locación o presta el servicio",
-        "locatario": "nombre y CUIT/DNI de quien recibe"
-    },
-    "objeto": "descripción del bien, servicio u obligación principal del contrato",
-    "plazo": {
-        "inicio": "fecha de inicio",
-        "vencimiento": "fecha de vencimiento",
-        "duracion": "duración expresada en años/meses",
-        "observaciones": "condiciones de renovación o preaviso si las hay"
-    },
-    "canon": {
-        "monto_inicial": "monto y moneda del precio o canon inicial",
-        "ajuste": "mecanismo de ajuste si lo hay (IPC, dólar, etc.)",
-        "vencimiento_pago": "plazo o fecha de pago"
-    },
-    "clausulas": {
-        "rescision": "condiciones y penalidades por rescisión anticipada",
-        "mora": "intereses y condiciones de mora",
-        "limitacion_responsabilidad": "límites a la responsabilidad de las partes si los hay",
-        "jurisdiccion": "tribunales competentes pactados",
-        "notificaciones": "medios y plazos para notificaciones entre partes"
-    },
-    "riesgos": [
-        "lista de cláusulas o condiciones que representan un riesgo para alguna de las partes"
-    ],
-    "observaciones_generales": "resumen ejecutivo del contrato y recomendaciones principales"
-}
 
 
 # --- Prompt del sistema ---
@@ -56,7 +27,7 @@ Tu tarea es analizar el contrato provisto y extraer información estructurada en
 
 Reglas estrictas:
 - Respondé ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin explicaciones, sin bloques de código.
-- Si un campo no está presente en el contrato, usá el valor null. Nunca inferís ni inventás información.
+- Si un campo no está presente en el contrato, usá el valor null (todas las claves deben estar presentes). Nunca inferís ni inventás información.
 - Toda observación de riesgo debe estar fundada en una norma concreta del CCyCN o en jurisprudencia reconocida. Citá obligatoriamente el artículo del CCyCN u otra norma aplicable y/o la fuente jurisprudencial.
 - No emitas opiniones personales ni recomendaciones sin sustento normativo.
 - Las observaciones generales deben ser un resumen ejecutivo de no más de 3 oraciones, con referencia a la normativa aplicable."""
@@ -89,25 +60,13 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
 
     print(f"[analizador] ✓ Texto extraído ({extraccion['paginas']} páginas, método: {extraccion['metodo']})")
 
-    # 2. Llamar a la IA
-    print("[analizador] Enviando a IA para análisis...")
+    # 2. Llamar a la IA y validar contra el esquema (1 reintento con el error de validación)
     prompt = _construir_prompt(extraccion["texto"])
-    respuesta_ia = llamar_ia(prompt=prompt, sistema=SISTEMA)
+    datos, error = _obtener_analisis(prompt)
+    if error:
+        return _error(error)
 
-    if not respuesta_ia["exito"]:
-        return _error(f"Error en IA: {respuesta_ia['error']}")
-
-    if respuesta_ia.get("truncada"):
-        return _error("Respuesta truncada por límite de tokens. Aumentá IA_MAX_TOKENS en .env.")
-
-    print(f"[analizador] ✓ Respuesta recibida (proveedor: {respuesta_ia['proveedor']})")
-
-    # 3. Parsear JSON
-    datos = _parsear_json(respuesta_ia["respuesta"])
-    if datos is None:
-        return _error("La IA no devolvió un JSON válido.")
-
-    print("[analizador] ✓ JSON parseado correctamente")
+    print("[analizador] ✓ Respuesta validada contra el esquema")
 
     resultado = {"datos": datos, "json_path": None, "pdf_path": None, "exito": True, "error": None}
 
@@ -134,8 +93,50 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
     return resultado
 
 
+def _obtener_analisis(prompt: str) -> tuple[dict | None, str | None]:
+    """Llama a la IA y valida. Devuelve (datos, None) o (None, mensaje_de_error)."""
+    prompt_actual = prompt
+    ultimo_error = ""
+
+    for intento in (1, 2):
+        print(f"[analizador] Enviando a IA para análisis (intento {intento}/2)...")
+        respuesta_ia = llamar_ia(prompt=prompt_actual, sistema=SISTEMA)
+
+        if not respuesta_ia["exito"]:
+            return None, f"Error en IA: {respuesta_ia['error']}"
+
+        if respuesta_ia.get("truncada"):
+            return None, "Respuesta truncada por límite de tokens. Aumentá IA_MAX_TOKENS en .env."
+
+        print(f"[analizador] ✓ Respuesta recibida (proveedor: {respuesta_ia['proveedor']})")
+
+        datos, ultimo_error = _validar(respuesta_ia["respuesta"])
+        if datos is not None:
+            return datos, None
+
+        print(f"[analizador] ✗ Validación fallida:\n{ultimo_error}")
+        prompt_actual = (
+            f"{prompt}\n\nTu respuesta anterior no cumplió el esquema:\n{ultimo_error}\n"
+            f"Respuesta anterior:\n{respuesta_ia['respuesta']}\n\n"
+            "Corregí los errores y respondé ÚNICAMENTE con el JSON completo y válido."
+        )
+
+    return None, f"La respuesta de la IA no cumple el esquema tras 2 intentos:\n{ultimo_error}"
+
+
+def _validar(texto: str) -> tuple[dict | None, str]:
+    """Parsea y valida contra AnalisisContrato. Devuelve (datos, '') o (None, descripción_del_error)."""
+    crudo = _parsear_json(texto)
+    if crudo is None:
+        return None, "- La respuesta no es un JSON válido."
+    try:
+        return AnalisisContrato.model_validate(crudo).model_dump(), ""
+    except ValidationError as e:
+        return None, resumir_errores(e)
+
+
 def _construir_prompt(texto: str) -> str:
-    esquema_str = json.dumps(ESQUEMA, ensure_ascii=False, indent=2)
+    esquema_str = plantilla_json()
     return f"""Analizá el siguiente contrato y devolvé un JSON con exactamente esta estructura:
 
 {esquema_str}
