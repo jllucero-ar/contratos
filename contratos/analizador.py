@@ -15,6 +15,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from pydantic import ValidationError
 
 from contratos.esquema import AnalisisContrato, plantilla_json, resumir_errores
+from core.anonimizador import Anonimizador
 from core.controles import verificar_citas_ccycn
 from core.extractor import extraer_texto
 from core.ia_client import llamar_ia
@@ -61,15 +62,21 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
 
     print(f"[analizador] ✓ Texto extraído ({extraccion['paginas']} páginas, método: {extraccion['metodo']})")
 
-    # 2. Llamar a la IA y validar contra el esquema (1 reintento con el error de validación)
-    prompt = _construir_prompt(extraccion["texto"])
+    # 2. Anonimizar (DNI, CUIT, CUIL, email, teléfono) antes de enviar al proveedor.
+    #    El mapeo vive solo en esta variable local; no se loguea ni se guarda.
+    anonimizador = Anonimizador()
+    texto_anonimo = anonimizador.anonimizar(extraccion["texto"])
+    print(f"[analizador] ✓ Datos anonimizados: {anonimizador.conteo or 'ninguno'}")
+
+    # 3. Llamar a la IA y validar contra el esquema (1 reintento con el error de validación)
+    prompt = _construir_prompt(texto_anonimo)
     datos, error = _obtener_analisis(prompt)
     if error:
         return _error(error)
 
     print("[analizador] ✓ Respuesta validada contra el esquema")
 
-    # 3. Controles determinísticos (informan, no bloquean)
+    # 4. Controles determinísticos sobre la respuesta aún anonimizada (informan, no bloquean)
     datos["controles"] = _ejecutar_controles(datos)
     citas = datos["controles"]["citas_ccycn"]
     if citas["paso"]:
@@ -77,9 +84,17 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
     else:
         print(f"[analizador] ⚠ Citas CCyCN inválidas: {[i['cita'] for i in citas['invalidas']]}")
 
+    # 5. Restaurar los valores reales y reportar la anonimización
+    datos = anonimizador.restaurar(datos)
+    datos["anonimizacion"] = {
+        "por_tipo": anonimizador.conteo,
+        "total": sum(anonimizador.conteo.values()),
+        "marcadores_sin_restaurar": anonimizador.contar_marcadores(datos),
+    }
+
     resultado = {"datos": datos, "json_path": None, "pdf_path": None, "exito": True, "error": None}
 
-    # 4. Guardar JSON
+    # 6. Guardar JSON
     if path_output_json:
         try:
             Path(path_output_json).parent.mkdir(parents=True, exist_ok=True)
@@ -90,7 +105,7 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
         except Exception as e:
             print(f"[analizador] ✗ Error guardando JSON: {e}")
 
-    # 5. Generar PDF
+    # 7. Generar PDF
     if path_output_pdf:
         rep = generar_reporte(datos, path_output_pdf)
         if rep["exito"]:
