@@ -1,0 +1,507 @@
+{
+  "timestamp": "2026-10-18T20:54:01+00:00",
+  "proveedor": "anthropic",
+  "modelo": "claude-sonnet-4-5",
+  "prompt_version": "2.1",
+  "resumen": {
+    "casos": 5,
+    "casos_con_error": 0,
+    "exactitud_campos": 1.0,
+    "respeto_de_nulos": 1.0,
+    "citas_encontradas": 40,
+    "tasa_citas_invalidas": 0.0,
+    "literalidad_no_encontrados": 1,
+    "riesgos_esperados": 13,
+    "riesgos_detectados": 10,
+    "recall_riesgos": 0.769,
+    "riesgos_con_cita_respaldada": 0.429,
+    "citas_de_riesgos_a_revisar": 20,
+    "citas_de_riesgos_evaluadas": 24,
+    "riesgos_adicionales": 11,
+    "reintentos": 0,
+    "tokens_entrada": 7401,
+    "tokens_salida": 6410
+  },
+  "casos": [
+    {
+      "id": "lc01_locacion_comercial",
+      "trampa": "Caso base: todos los campos presentes. Sirve de línea de referencia.",
+      "exito": true,
+      "error": null,
+      "campos_ok": 14,
+      "campos_total": 14,
+      "nulos_esperados": 0,
+      "nulos_respetados": 0,
+      "citas_encontradas": 6,
+      "citas_invalidas": 0,
+      "literalidad_no_encontrados": 0,
+      "literalidad_campos": [],
+      "riesgos": {
+        "esperados": 2,
+        "detectados": 2,
+        "requieren_cita": 2,
+        "respaldados": 1,
+        "citas_a_revisar": 4,
+        "citas_evaluadas": 6,
+        "detalle": [
+          {
+            "id": "R1",
+            "descripcion": "Mora automática sin interpelación con interés punitorio del 1,5% mensual",
+            "detectado": true,
+            "requiere_cita": true,
+            "respaldado": true,
+            "citados": [
+              771,
+              886,
+              1221
+            ],
+            "respaldados": [
+              771,
+              886
+            ],
+            "a_revisar": [
+              {
+                "articulo": 1221,
+                "rubro": "Resolución anticipada"
+              }
+            ]
+          },
+          {
+            "id": "R2",
+            "descripcion": "Exoneración de responsabilidad del locador por caso fortuito / fuerza mayor",
+            "detectado": true,
+            "requiere_cita": true,
+            "respaldado": false,
+            "citados": [
+              1200,
+              1204,
+              1733
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 1200,
+                "rubro": "Entregar la cosa"
+              },
+              {
+                "articulo": 1204,
+                "rubro": null
+              },
+              {
+                "articulo": 1733,
+                "rubro": null
+              }
+            ]
+          }
+        ],
+        "riesgos_adicionales": [
+          {
+            "texto": "Ajuste semestral del canon: Si bien el art. 14 Ley 27.551 establece que el ajuste en locaciones debe ser anual, el contrato prevé ajuste semestral, lo cual cont",
+            "citados": []
+          }
+        ]
+      },
+      "intentos": 1,
+      "tokens_entrada": 1638,
+      "tokens_salida": 1295,
+      "fallos": []
+    },
+    {
+      "id": "lv04_locacion_vivienda",
+      "trampa": "Dos fechas (firma 10/12/2025 vs. inicio de vigencia 1/1/2026) y dos montos idénticos con distinto concepto (alquiler vs. depósito). Incluye DNI, teléfonos y emails para ejercitar la anonimización. Las partes son personas humanas (DNI, sin CUIT).",
+      "exito": true,
+      "error": null,
+      "campos_ok": 14,
+      "campos_total": 14,
+      "nulos_esperados": 0,
+      "nulos_respetados": 0,
+      "citas_encontradas": 5,
+      "citas_invalidas": 0,
+      "literalidad_no_encontrados": 0,
+      "literalidad_campos": [],
+      "riesgos": {
+        "esperados": 3,
+        "detectados": 2,
+        "requieren_cita": 1,
+        "respaldados": 0,
+        "citas_a_revisar": 5,
+        "citas_evaluadas": 5,
+        "detalle": [
+          {
+            "id": "R1",
+            "descripcion": "Interés punitorio del 0,5% diario (desproporcionado)",
+            "detectado": true,
+            "requiere_cita": true,
+            "respaldado": false,
+            "citados": [
+              332,
+              1154
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 332,
+                "rubro": null
+              },
+              {
+                "articulo": 1154,
+                "rubro": null
+              }
+            ]
+          },
+          {
+            "id": "R2",
+            "descripcion": "Preaviso de 60 días para que la locataria resuelva (más gravoso que el régimen legal)",
+            "detectado": false,
+            "requiere_cita": true,
+            "respaldado": false,
+            "citados": [],
+            "respaldados": [],
+            "a_revisar": []
+          },
+          {
+            "id": "R3",
+            "descripcion": "Depósito en garantía sin plazo de devolución ni actualización",
+            "detectado": true,
+            "requiere_cita": false,
+            "respaldado": null,
+            "citados": [
+              765,
+              766,
+              1197
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 765,
+                "rubro": null
+              },
+              {
+                "articulo": 766,
+                "rubro": null
+              },
+              {
+                "articulo": 1197,
+                "rubro": null
+              }
+            ]
+          }
+        ],
+        "riesgos_adicionales": [
+          {
+            "texto": "AJUSTE DEL CANON CADA CUATRO MESES: Si bien el artículo 14 de la Ley 27.551 establece que el monto del alquiler debe permanecer sin modificaciones por el términ",
+            "citados": []
+          }
+        ]
+      },
+      "intentos": 1,
+      "tokens_entrada": 1571,
+      "tokens_salida": 1183,
+      "fallos": []
+    },
+    {
+      "id": "mt05_mantenimiento_incompleto",
+      "trampa": "Contrato incompleto: no hay fechas, plazo ni precio definidos ('será acordado', 'será convenido'). El modelo debe devolver null (o a lo sumo repetir que está a convenir) y no inventar fechas ni importes.",
+      "exito": true,
+      "error": null,
+      "campos_ok": 11,
+      "campos_total": 11,
+      "nulos_esperados": 5,
+      "nulos_respetados": 5,
+      "citas_encontradas": 10,
+      "citas_invalidas": 0,
+      "literalidad_no_encontrados": 0,
+      "literalidad_campos": [],
+      "riesgos": {
+        "esperados": 2,
+        "detectados": 2,
+        "requieren_cita": 2,
+        "respaldados": 1,
+        "citas_a_revisar": 6,
+        "citas_evaluadas": 7,
+        "detalle": [
+          {
+            "id": "R1",
+            "descripcion": "Plazo y precio indeterminados (a acordar por adenda / por orden de trabajo)",
+            "detectado": true,
+            "requiere_cita": true,
+            "respaldado": true,
+            "citados": [
+              958,
+              990,
+              991,
+              1011,
+              1133,
+              1251
+            ],
+            "respaldados": [
+              1251
+            ],
+            "a_revisar": [
+              {
+                "articulo": 958,
+                "rubro": null
+              },
+              {
+                "articulo": 990,
+                "rubro": null
+              },
+              {
+                "articulo": 991,
+                "rubro": null
+              },
+              {
+                "articulo": 1011,
+                "rubro": null
+              },
+              {
+                "articulo": 1133,
+                "rubro": null
+              }
+            ]
+          },
+          {
+            "id": "R2",
+            "descripcion": "Responsabilidad de la contratista sin tope y exigencia de seguro",
+            "detectado": true,
+            "requiere_cita": true,
+            "respaldado": false,
+            "citados": [
+              1744
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 1744,
+                "rubro": null
+              }
+            ]
+          }
+        ],
+        "riesgos_adicionales": [
+          {
+            "texto": "Prohibición absoluta de subcontratación sin criterios (Cláusula QUINTA): La prohibición de subcontratar sin autorización escrita, sin establecer criterios objet",
+            "citados": [
+              1000
+            ]
+          },
+          {
+            "texto": "Ausencia de regulación de intereses moratorios: El contrato no prevé tasa de interés moratoria para pagos adeudados. Conforme art. 768 CCyCN, en ausencia de pac",
+            "citados": [
+              768,
+              771
+            ]
+          }
+        ]
+      },
+      "intentos": 1,
+      "tokens_entrada": 1317,
+      "tokens_salida": 1326,
+      "fallos": []
+    },
+    {
+      "id": "sm03_suministro",
+      "trampa": "Montos y plazo escritos con letras ('dieciocho meses', 'CUATROCIENTOS CINCUENTA'), precio fijo (sin ajuste), jurisdicción por arbitraje en vez de tribunales. Un 'ajuste' inventado o una duración derivada de fechas son errores; el control de literalidad puede dar falsa alarma en la duración.",
+      "exito": true,
+      "error": null,
+      "campos_ok": 11,
+      "campos_total": 11,
+      "nulos_esperados": 0,
+      "nulos_respetados": 0,
+      "citas_encontradas": 11,
+      "citas_invalidas": 0,
+      "literalidad_no_encontrados": 1,
+      "literalidad_campos": [
+        "plazo.duracion"
+      ],
+      "riesgos": {
+        "esperados": 3,
+        "detectados": 3,
+        "requieren_cita": 2,
+        "respaldados": 1,
+        "citas_a_revisar": 4,
+        "citas_evaluadas": 5,
+        "detalle": [
+          {
+            "id": "R1",
+            "descripcion": "Limitación de la responsabilidad del proveedor al valor de la partida no entregada",
+            "detectado": true,
+            "requiere_cita": true,
+            "respaldado": false,
+            "citados": [
+              1117,
+              1118,
+              1122
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 1117,
+                "rubro": null
+              },
+              {
+                "articulo": 1118,
+                "rubro": null
+              },
+              {
+                "articulo": 1122,
+                "rubro": null
+              }
+            ]
+          },
+          {
+            "id": "R2",
+            "descripcion": "Precio fijo en dólares por 18 meses sin ajuste (riesgo de desequilibrio / imprevisión)",
+            "detectado": true,
+            "requiere_cita": true,
+            "respaldado": true,
+            "citados": [
+              1091
+            ],
+            "respaldados": [
+              1091
+            ],
+            "a_revisar": []
+          },
+          {
+            "id": "R3",
+            "descripcion": "Plazo muy breve (48 horas) para rechazar partidas",
+            "detectado": true,
+            "requiere_cita": false,
+            "respaldado": null,
+            "citados": [
+              1153
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 1153,
+                "rubro": null
+              }
+            ]
+          }
+        ],
+        "riesgos_adicionales": [
+          {
+            "texto": "RIESGO: Ausencia de cláusula de rescisión anticipada impide a las partes resolver el contrato ante cambios sustanciales en las condiciones de mercado o incumpli",
+            "citados": [
+              1077,
+              1089
+            ]
+          },
+          {
+            "texto": "RIESGO: Pago en dólares estadounidenses puede encontrar restricciones en regulaciones cambiarias argentinas vigentes al momento de ejecución (julio 2026), gener",
+            "citados": [
+              765,
+              766
+            ]
+          }
+        ]
+      },
+      "intentos": 1,
+      "tokens_entrada": 1460,
+      "tokens_salida": 1384,
+      "fallos": []
+    },
+    {
+      "id": "sv02_servicios_profesionales",
+      "trampa": "El contrato NO tiene ajuste de honorarios, cláusula de mora ni jurisdicción: el modelo debe devolver null y no inventar. Además, el cliente aparece primero y la consultora segunda (parte_a/parte_b van por orden de aparición) y la fecha de firma (2 de marzo) no es la de inicio.",
+      "exito": true,
+      "error": null,
+      "campos_ok": 13,
+      "campos_total": 13,
+      "nulos_esperados": 3,
+      "nulos_respetados": 3,
+      "citas_encontradas": 8,
+      "citas_invalidas": 0,
+      "literalidad_no_encontrados": 0,
+      "literalidad_campos": [],
+      "riesgos": {
+        "esperados": 3,
+        "detectados": 1,
+        "requieren_cita": 0,
+        "respaldados": 0,
+        "citas_a_revisar": 1,
+        "citas_evaluadas": 1,
+        "detalle": [
+          {
+            "id": "R1",
+            "descripcion": "Rescisión sin causa con preaviso de 15 días y sin indemnización",
+            "detectado": false,
+            "requiere_cita": true,
+            "respaldado": false,
+            "citados": [],
+            "respaldados": [],
+            "a_revisar": []
+          },
+          {
+            "id": "R2",
+            "descripcion": "No hay cláusula de jurisdicción ni ley aplicable",
+            "detectado": true,
+            "requiere_cita": false,
+            "respaldado": null,
+            "citados": [
+              2609
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 2609,
+                "rubro": null
+              }
+            ]
+          },
+          {
+            "id": "R3",
+            "descripcion": "Independencia / riesgo de recalificación de la relación como dependiente",
+            "detectado": false,
+            "requiere_cita": true,
+            "respaldado": false,
+            "citados": [],
+            "respaldados": [],
+            "a_revisar": []
+          }
+        ],
+        "riesgos_adicionales": [
+          {
+            "texto": "Honorarios pactados en moneda extranjera (USD) sin mecanismo de ajuste ni conversión: puede generar conflictos sobre el tipo de cambio aplicable al momento del ",
+            "citados": [
+              765,
+              766
+            ]
+          },
+          {
+            "texto": "Ausencia de cláusula de intereses moratorios: ante el incumplimiento en el pago de honorarios, no se establece tasa de interés aplicable, debiendo recurrirse a ",
+            "citados": [
+              768
+            ]
+          },
+          {
+            "texto": "Confidencialidad post-contractual de dos años: el plazo de confidencialidad posterior a la finalización del contrato puede considerarse excesivo o insuficiente ",
+            "citados": [
+              9,
+              1255
+            ]
+          },
+          {
+            "texto": "Ausencia de regulación sobre propiedad intelectual: no se establece a quién pertenecen las políticas internas, manuales y otros productos intelectuales elaborad",
+            "citados": [
+              1255,
+              1256
+            ]
+          },
+          {
+            "texto": "Falta de previsión sobre gastos y viáticos: no se regula si la consultora tiene derecho a reembolso de gastos, viáticos o costos asociados a la prestación del s",
+            "citados": [
+              1255
+            ]
+          }
+        ]
+      },
+      "intentos": 1,
+      "tokens_entrada": 1415,
+      "tokens_salida": 1222,
+      "fallos": []
+    }
+  ]
+}

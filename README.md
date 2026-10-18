@@ -211,6 +211,15 @@ No test calls a real API: the provider SDKs and the analyzer's AI call are mocke
 - **Runner:** `python evaluacion/evaluar.py [--casos lc01,sv02]` runs the analyzer on the set (this **calls the real provider API and consumes tokens**) and writes `evaluacion/reportes/eval_<timestamp>_<provider>-<model>_p<PROMPT_VERSION>.{json,md}`.
 - **Compare runs:** `python evaluacion/evaluar.py --comparar evaluacion/reportes/*.json` prints a table across providers, models and prompt versions (no API calls).
 
+**Risk evaluation.** Each golden case also lists the risks a careful reviewer should flag (`riesgos_esperados`) and which CCyCN articles would be acceptable support for each. The runner reports:
+
+- *recall*: how many expected risks the model flagged (keyword match on the model's `riesgos`);
+- whether a detected risk cites at least one annotated article;
+- every other cited article, listed **for manual review** together with its title from `evaluacion/referencia_ccycn.json` (titles contrasted against the published CCyCN text on Infoleg);
+- extra risks the model raised that were not annotated (not penalized; some are valid).
+
+These annotations are a first draft by the project author's tooling and are marked `propuesta_pendiente_de_revision_juridica`: they must be reviewed by a lawyer against the current text of the code. "Needs review" means *a human has to look*, not *wrong*: in the first run several flagged articles (e.g. 1733 for fortuitous events) were plausible and the annotation list was simply too narrow. The article-support rate is therefore a lower bound.
+
 Metrics: field accuracy, null-respect rate (how often the model refuses to invent what the contract does not say), invalid CCyCN citation rate, values not found in the source text, retries, errors and tokens.
 
 Limits: five contracts are a smoke test, not a benchmark; `contiene` checks key facts, not full-sentence quality; results vary between runs of the same model.
