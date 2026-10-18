@@ -69,6 +69,7 @@ def evaluar_caso(caso: dict, resultado: dict) -> dict:
         "citas_encontradas": len(citas.get("encontradas", [])),
         "citas_invalidas": len(citas.get("invalidas", [])),
         "literalidad_no_encontrados": len(lit.get("no_encontrados", [])),
+        "literalidad_campos": [i["campo"] for i in lit.get("no_encontrados", [])],
         "intentos": meta.get("intentos") or 0,
         "tokens_entrada": meta.get("tokens_entrada") or 0,
         "tokens_salida": meta.get("tokens_salida") or 0,
