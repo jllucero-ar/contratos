@@ -218,7 +218,7 @@ No test calls a real API: the provider SDKs and the analyzer's AI call are mocke
 - every other cited article, listed **for manual review** together with its title from `evaluacion/referencia_ccycn.json` (titles contrasted against the published CCyCN text on Infoleg);
 - extra risks the model raised that were not annotated (not penalized; some are valid).
 
-These annotations are a first draft by the project author's tooling and are marked `propuesta_pendiente_de_revision_juridica`: they must be reviewed by a lawyer against the current text of the code. "Needs review" means *a human has to look*, not *wrong*: in the first run several flagged articles (e.g. 1733 for fortuitous events) were plausible and the annotation list was simply too narrow. The article-support rate is therefore a lower bound.
+These annotations are a first draft written with AI assistance and are marked `propuesta_pendiente_de_revision_juridica`: they must be reviewed by a lawyer against the current text of the code. "Needs review" means *a human has to look*, not *wrong*: in the first run several flagged articles (e.g. 1733 for fortuitous events) were plausible and the annotation list was simply too narrow. The article-support rate is therefore a lower bound.
 
 Metrics: field accuracy, null-respect rate (how often the model refuses to invent what the contract does not say), invalid CCyCN citation rate, values not found in the source text, retries, errors and tokens.
 
