@@ -1,0 +1,556 @@
+{
+  "timestamp": "2026-10-18T21:26:31+00:00",
+  "proveedor": "anthropic",
+  "modelo": "claude-sonnet-4-5",
+  "prompt_version": "2.1",
+  "resumen": {
+    "casos": 5,
+    "casos_con_error": 0,
+    "exactitud_campos": 1.0,
+    "respeto_de_nulos": 1.0,
+    "citas_encontradas": 47,
+    "tasa_citas_invalidas": 0.0,
+    "literalidad_no_encontrados": 1,
+    "riesgos_esperados": 13,
+    "riesgos_detectados": 11,
+    "recall_riesgos": 0.846,
+    "riesgos_con_cita_respaldada": 0.778,
+    "citas_de_riesgos_a_revisar": 15,
+    "citas_de_riesgos_evaluadas": 24,
+    "riesgos_adicionales": 14,
+    "reintentos": 0,
+    "tokens_entrada": 7401,
+    "tokens_salida": 6629
+  },
+  "casos": [
+    {
+      "id": "lc01_locacion_comercial",
+      "trampa": "Caso base: todos los campos presentes. Sirve de línea de referencia.",
+      "exito": true,
+      "error": null,
+      "campos_ok": 14,
+      "campos_total": 14,
+      "nulos_esperados": 0,
+      "nulos_respetados": 0,
+      "citas_encontradas": 11,
+      "citas_invalidas": 0,
+      "literalidad_no_encontrados": 0,
+      "literalidad_campos": [],
+      "riesgos": {
+        "esperados": 2,
+        "detectados": 2,
+        "requieren_cita": 2,
+        "respaldados": 2,
+        "citas_a_revisar": 4,
+        "citas_evaluadas": 8,
+        "detalle": [
+          {
+            "id": "R1",
+            "descripcion": "Mora automática sin interpelación con interés punitorio del 1,5% mensual",
+            "detectado": true,
+            "textos_modelo": [
+              "La tasa de interés punitorio del 1,5% mensual (18% anual) podría considerarse excesiva según art. 768 y 771 CCyCN que facultan al juez a reducir intereses desproporcionados o abusivos. Jurisprudencia: CSJN 'Recurso de hecho deducido por Banco de la Nación Argentina' (2012) estableció criterios de razonabilidad en intereses punitorios",
+              "La mora automática sin interpelación es válida conforme art. 886 inc. a) CCyCN cuando el plazo es expresamente determinado, pero la tasa punitoria debe ser razonable y no configurar un aprovechamiento abusivo según arts. 9 y 10 CCyCN (buena fe y abuso del derecho)"
+            ],
+            "requiere_cita": true,
+            "respaldado": true,
+            "citados": [
+              9,
+              10,
+              768,
+              771,
+              886
+            ],
+            "respaldados": [
+              768,
+              771,
+              886
+            ],
+            "a_revisar": [
+              {
+                "articulo": 9,
+                "rubro": null
+              },
+              {
+                "articulo": 10,
+                "rubro": null
+              }
+            ]
+          },
+          {
+            "id": "R2",
+            "descripcion": "Exoneración de responsabilidad del locador por caso fortuito / fuerza mayor",
+            "detectado": true,
+            "textos_modelo": [
+              "La cláusula de limitación de responsabilidad del locador por caso fortuito o fuerza mayor es válida conforme art. 1730 CCyCN, pero no puede extenderse a supuestos de dolo o culpa del locador (art. 1743 CCyCN). Debería precisarse si el locador cumple con las obligaciones de conservación y mantenimiento del art. 1204 CCyCN"
+            ],
+            "requiere_cita": true,
+            "respaldado": true,
+            "citados": [
+              1204,
+              1730,
+              1743
+            ],
+            "respaldados": [
+              1743
+            ],
+            "a_revisar": [
+              {
+                "articulo": 1204,
+                "rubro": null
+              },
+              {
+                "articulo": 1730,
+                "rubro": null
+              }
+            ]
+          }
+        ],
+        "riesgos_adicionales": [
+          {
+            "texto": "La cláusula de rescisión anticipada establece una penalidad de un mes y medio de canon si se rescinde durante el primer año, lo que debe evaluarse a luz del art. 1087 CCyCN que permite reducción judicial de cláusulas penales desproporcionadas o abusivas. La penalidad debe guardar proporción con el perjuicio efectivo",
+            "citados": [
+              1087
+            ]
+          },
+          {
+            "texto": "El ajuste semestral por ICL cumple con el art. 14 de la Ley 27.551, aunque debería verificarse que el plazo contractual de 24 meses respete el mínimo de 3 años establecido en el art. 1198 CCyCN para locaciones con destino comercial, excepto que se configure alguna de las excepciones del art. 1199 CCyCN",
+            "citados": [
+              1198,
+              1199
+            ]
+          }
+        ]
+      },
+      "intentos": 1,
+      "tokens_entrada": 1638,
+      "tokens_salida": 1266,
+      "fallos": []
+    },
+    {
+      "id": "lv04_locacion_vivienda",
+      "trampa": "Dos fechas (firma 10/12/2025 vs. inicio de vigencia 1/1/2026) y dos montos idénticos con distinto concepto (alquiler vs. depósito). Incluye DNI, teléfonos y emails para ejercitar la anonimización. Las partes son personas humanas (DNI, sin CUIT).",
+      "exito": true,
+      "error": null,
+      "campos_ok": 14,
+      "campos_total": 14,
+      "nulos_esperados": 0,
+      "nulos_respetados": 0,
+      "citas_encontradas": 7,
+      "citas_invalidas": 0,
+      "literalidad_no_encontrados": 0,
+      "literalidad_campos": [],
+      "riesgos": {
+        "esperados": 3,
+        "detectados": 3,
+        "requieren_cita": 2,
+        "respaldados": 2,
+        "citas_a_revisar": 3,
+        "citas_evaluadas": 5,
+        "detalle": [
+          {
+            "id": "R1",
+            "descripcion": "Interés punitorio del 0,5% diario (desproporcionado)",
+            "detectado": true,
+            "textos_modelo": [
+              "RIESGO LOCADOR - Interés punitorio del 0,5% diario excesivo: El art. 1728 CCyCN establece que la tasa de interés moratorio debe ser razonable y proporcional. Un 0,5% diario equivale a aproximadamente 182,5% anual, lo que resulta manifiestamente excesivo y puede ser reducido judicialmente conforme art. 771 CCyCN (facultad morigeradora del juez en cláusulas penales) y jurisprudencia de la CSJN que considera abusivas las tasas desproporcionadas."
+            ],
+            "requiere_cita": true,
+            "respaldado": true,
+            "citados": [
+              771,
+              1728
+            ],
+            "respaldados": [
+              771
+            ],
+            "a_revisar": [
+              {
+                "articulo": 1728,
+                "rubro": null
+              }
+            ]
+          },
+          {
+            "id": "R2",
+            "descripcion": "Preaviso de 60 días para que la locataria resuelva (más gravoso que el régimen legal)",
+            "detectado": true,
+            "textos_modelo": [
+              "RIESGO LOCADOR - Facultad unilateral de rescisión solo para la locataria: El art. 1221 CCyCN permite a la locataria rescindir transcurridos 6 meses con preaviso y penalidad equivalente a un mes y medio de alquiler (si rescinde entre los 6 meses y el año) o un mes (si rescinde después del año). El contrato no establece penalidad alguna, lo que perjudica al locador al privarlo de la indemnización legal que le corresponde conforme el citado artículo."
+            ],
+            "requiere_cita": true,
+            "respaldado": true,
+            "citados": [
+              1221
+            ],
+            "respaldados": [
+              1221
+            ],
+            "a_revisar": []
+          },
+          {
+            "id": "R3",
+            "descripcion": "Depósito en garantía sin plazo de devolución ni actualización",
+            "detectado": true,
+            "textos_modelo": [
+              "RIESGO LOCATARIA - Depósito en garantía equivalente a un mes de alquiler sin intereses: El art. 1196 CCyCN exige que el depósito en garantía no exceda el equivalente a un mes de alquiler. Si bien el contrato cumple este límite, no establece que el depósito devengará intereses, cuando el art. 1197 CCyCN dispone que debe actualizarse por IPC o el índice que lo reemplace, lo que genera un perjuicio económico para la locataria durante los 36 meses de vigencia."
+            ],
+            "requiere_cita": false,
+            "respaldado": null,
+            "citados": [
+              1196,
+              1197
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 1196,
+                "rubro": "Locación habitacional"
+              },
+              {
+                "articulo": 1197,
+                "rubro": null
+              }
+            ]
+          }
+        ],
+        "riesgos_adicionales": [
+          {
+            "texto": "RIESGO LOCATARIA - Ajuste cuatrimestral del canon: Si bien el art. 1195 CCyCN autoriza el ajuste por IPC, el ajuste cada cuatro meses puede generar incrementos sustanciales en períodos de alta inflación. La Ley 27.551 de alquileres previó originalmente ajustes anuales, pero al estar derogada rige el CCyCN que permite ajustes más frecuentes, lo que constituye un riesgo económico significativo para la locataria.",
+            "citados": [
+              1195
+            ]
+          }
+        ]
+      },
+      "intentos": 1,
+      "tokens_entrada": 1571,
+      "tokens_salida": 1320,
+      "fallos": []
+    },
+    {
+      "id": "mt05_mantenimiento_incompleto",
+      "trampa": "Contrato incompleto: no hay fechas, plazo ni precio definidos ('será acordado', 'será convenido'). El modelo debe devolver null (o a lo sumo repetir que está a convenir) y no inventar fechas ni importes.",
+      "exito": true,
+      "error": null,
+      "campos_ok": 11,
+      "campos_total": 11,
+      "nulos_esperados": 5,
+      "nulos_respetados": 5,
+      "citas_encontradas": 8,
+      "citas_invalidas": 0,
+      "literalidad_no_encontrados": 0,
+      "literalidad_campos": [],
+      "riesgos": {
+        "esperados": 2,
+        "detectados": 2,
+        "requieren_cita": 2,
+        "respaldados": 0,
+        "citas_a_revisar": 5,
+        "citas_evaluadas": 5,
+        "detalle": [
+          {
+            "id": "R1",
+            "descripcion": "Plazo y precio indeterminados (a acordar por adenda / por orden de trabajo)",
+            "detectado": true,
+            "textos_modelo": [
+              "Plazo indeterminado: La vigencia, fecha de inicio y finalización quedan diferidas a una adenda futura (Cláusula Segunda), generando incertidumbre sobre la exigibilidad del contrato. Art. 1010 CCyCN requiere que el contrato esté integrado con todos sus elementos esenciales. La indefinición del plazo puede afectar la causa del contrato (art. 1012 CCyCN).",
+              "Precio indeterminado: El precio será convenido para cada orden de trabajo (Cláusula Tercera), sin criterio objetivo predeterminado. Art. 1133 CCyCN establece que el precio debe ser determinado o determinable. La ausencia de parámetros objetivos puede generar conflictos en la determinación del precio de cada servicio.",
+              "Falta de procedimiento para órdenes de trabajo: No se regula cómo, cuándo ni en qué forma LA COMITENTE emitirá las órdenes de trabajo, ni los plazos de ejecución. Esta indeterminación afecta la certeza de las obligaciones principales (art. 1011 CCyCN)."
+            ],
+            "requiere_cita": true,
+            "respaldado": false,
+            "citados": [
+              1010,
+              1011,
+              1012,
+              1133
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 1010,
+                "rubro": null
+              },
+              {
+                "articulo": 1011,
+                "rubro": null
+              },
+              {
+                "articulo": 1012,
+                "rubro": null
+              },
+              {
+                "articulo": 1133,
+                "rubro": null
+              }
+            ]
+          },
+          {
+            "id": "R2",
+            "descripcion": "Responsabilidad de la contratista sin tope y exigencia de seguro",
+            "detectado": true,
+            "textos_modelo": [
+              "Responsabilidad civil sin límite cuantitativo: Si bien se exige seguro de responsabilidad civil (Cláusula Cuarta), no se establece monto mínimo de cobertura ni límite de responsabilidad. Art. 1749 y ss. CCyCN regulan la responsabilidad civil; la ausencia de previsión sobre montos de cobertura puede resultar insuficiente ante daños graves."
+            ],
+            "requiere_cita": true,
+            "respaldado": false,
+            "citados": [
+              1749
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 1749,
+                "rubro": null
+              }
+            ]
+          }
+        ],
+        "riesgos_adicionales": [
+          {
+            "texto": "Ausencia de régimen de mora: No se establecen intereses moratorios ni condiciones de mora. En caso de incumplimiento en el pago, resulta aplicable supletoriamente el art. 768 CCyCN (tasa de interés), pero la falta de previsión contractual genera incertidumbre.",
+            "citados": [
+              768
+            ]
+          },
+          {
+            "texto": "Ausencia de régimen de notificaciones: No se establece domicilio constituido, medio ni plazo para notificaciones, salvo la rescisión. Arts. 1212 y 1213 CCyCN prevén requisitos de notificaciones eficaces; la ausencia de regulación puede generar controversias sobre la validez de comunicaciones.",
+            "citados": [
+              1212,
+              1213
+            ]
+          },
+          {
+            "texto": "Falta de cláusula de confidencialidad o protección de datos: Tratándose de servicios en edificio, la contratista puede acceder a información sensible. Ley 25.326 de Protección de Datos Personales exige resguardos que no están contemplados en el contrato.",
+            "citados": []
+          }
+        ]
+      },
+      "intentos": 1,
+      "tokens_entrada": 1317,
+      "tokens_salida": 1235,
+      "fallos": []
+    },
+    {
+      "id": "sm03_suministro",
+      "trampa": "Montos y plazo escritos con letras ('dieciocho meses', 'CUATROCIENTOS CINCUENTA'), precio fijo (sin ajuste), jurisdicción por arbitraje en vez de tribunales. Un 'ajuste' inventado o una duración derivada de fechas son errores; el control de literalidad puede dar falsa alarma en la duración.",
+      "exito": true,
+      "error": null,
+      "campos_ok": 11,
+      "campos_total": 11,
+      "nulos_esperados": 0,
+      "nulos_respetados": 0,
+      "citas_encontradas": 9,
+      "citas_invalidas": 0,
+      "literalidad_no_encontrados": 1,
+      "literalidad_campos": [
+        "plazo.duracion"
+      ],
+      "riesgos": {
+        "esperados": 3,
+        "detectados": 2,
+        "requieren_cita": 2,
+        "respaldados": 2,
+        "citas_a_revisar": 1,
+        "citas_evaluadas": 3,
+        "detalle": [
+          {
+            "id": "R1",
+            "descripcion": "Limitación de la responsabilidad del proveedor al valor de la partida no entregada",
+            "detectado": true,
+            "textos_modelo": [
+              "Limitación de responsabilidad al valor de la partida no entregada: La cláusula séptima limita la responsabilidad del proveedor exclusivamente al valor de la partida no entregada, excluyendo daños consecuenciales. Conforme art. 1743 CCyCN, es nula la cláusula que exime o limita la obligación de indemnizar cuando afecta derechos indisponibles, causa dolo o culpa grave, o desnaturaliza las obligaciones. Si el incumplimiento del proveedor genera lucro cesante o daño emergente adicional al comprador, esta limitación podría ser cuestionada judicialmente."
+            ],
+            "requiere_cita": true,
+            "respaldado": true,
+            "citados": [
+              1743
+            ],
+            "respaldados": [
+              1743
+            ],
+            "a_revisar": []
+          },
+          {
+            "id": "R2",
+            "descripcion": "Precio fijo en dólares por 18 meses sin ajuste (riesgo de desequilibrio / imprevisión)",
+            "detectado": true,
+            "textos_modelo": [
+              "Precio fijo en dólares estadounidenses sin ajuste por 18 meses: El precio fijo en moneda extranjera sin mecanismo de ajuste durante 18 meses expone al proveedor a riesgos por variaciones en costos de producción, logística y tipo de cambio. Conforme art. 765 CCyCN, las obligaciones de dar sumas de dinero deben expresarse en moneda de curso legal, salvo excepciones. La Ley 23.928 prohíbe la actualización monetaria pero permite el pago en moneda extranjera si así se pactó. El art. 1091 CCyCN sobre imprevisión podría aplicarse si circunstancias extraordinarias tornan excesivamente onerosa la prestación."
+            ],
+            "requiere_cita": true,
+            "respaldado": true,
+            "citados": [
+              765,
+              1091
+            ],
+            "respaldados": [
+              1091
+            ],
+            "a_revisar": [
+              {
+                "articulo": 765,
+                "rubro": null
+              }
+            ]
+          },
+          {
+            "id": "R3",
+            "descripcion": "Plazo muy breve (48 horas) para rechazar partidas",
+            "detectado": false,
+            "textos_modelo": [],
+            "requiere_cita": false,
+            "respaldado": false,
+            "citados": [],
+            "respaldados": [],
+            "a_revisar": []
+          }
+        ],
+        "riesgos_adicionales": [
+          {
+            "texto": "Ausencia de cláusula de rescisión anticipada: Las partes no han previsto mecanismo de rescisión anticipada ni penalidades aplicables. Conforme art. 1011 CCyCN, cualquiera de las partes puede resolver el contrato por incumplimiento de la otra, pero la falta de regulación específica genera incertidumbre sobre plazos y condiciones. Art. 1031 CCyCN regula el suministro pero permite pactos en contrario.",
+            "citados": [
+              1011,
+              1031
+            ]
+          },
+          {
+            "texto": "Falta de previsión sobre fuerza mayor o caso fortuito: El contrato no regula las consecuencias de eventos de fuerza mayor o caso fortuito que impidan el cumplimiento. Conforme arts. 1730 y 1731 CCyCN, el caso fortuito exime de responsabilidad, pero el contrato debería especificar si suspende o extingue las obligaciones, especialmente tratándose de un suministro de 18 meses donde eventos climáticos, fitosanitarios o logísticos pueden afectar la producción agrícola.",
+            "citados": [
+              1730,
+              1731
+            ]
+          },
+          {
+            "texto": "Arbitraje obligatorio sin reserva de medidas cautelares ante tribunales ordinarios: La cláusula octava somete toda controversia a arbitraje sin prever la posibilidad de solicitar medidas cautelares ante la justicia ordinaria. Conforme art. 1649 CCyCN y arts. 1 y 2 de la Ley 26.589 de Mediación y Conciliación, el arbitraje es válido pero la jurisprudencia reconoce la competencia de tribunales ordinarios para medidas cautelares urgentes (CNCom., Sala B, 'Bunge Argentina S.A. c/ Nidera S.A.', 18/03/2010).",
+            "citados": [
+              1649
+            ]
+          }
+        ]
+      },
+      "intentos": 1,
+      "tokens_entrada": 1460,
+      "tokens_salida": 1515,
+      "fallos": []
+    },
+    {
+      "id": "sv02_servicios_profesionales",
+      "trampa": "El contrato NO tiene ajuste de honorarios, cláusula de mora ni jurisdicción: el modelo debe devolver null y no inventar. Además, el cliente aparece primero y la consultora segunda (parte_a/parte_b van por orden de aparición) y la fecha de firma (2 de marzo) no es la de inicio.",
+      "exito": true,
+      "error": null,
+      "campos_ok": 13,
+      "campos_total": 13,
+      "nulos_esperados": 3,
+      "nulos_respetados": 3,
+      "citas_encontradas": 12,
+      "citas_invalidas": 0,
+      "literalidad_no_encontrados": 0,
+      "literalidad_campos": [],
+      "riesgos": {
+        "esperados": 3,
+        "detectados": 2,
+        "requieren_cita": 1,
+        "respaldados": 1,
+        "citas_a_revisar": 2,
+        "citas_evaluadas": 3,
+        "detalle": [
+          {
+            "id": "R1",
+            "descripcion": "Rescisión sin causa con preaviso de 15 días y sin indemnización",
+            "detectado": true,
+            "textos_modelo": [
+              "Rescisión sin causa con preaviso breve: Si bien la libertad contractual permite la rescisión sin causa (art. 1077 CCyCN), el plazo de 15 días puede resultar insuficiente para LA CONSULTORA, especialmente si ha rechazado otros trabajos o incurrido en gastos específicos para este proyecto, pudiendo configurarse abuso del derecho (art. 10 CCyCN)."
+            ],
+            "requiere_cita": true,
+            "respaldado": true,
+            "citados": [
+              10,
+              1077
+            ],
+            "respaldados": [
+              1077
+            ],
+            "a_revisar": [
+              {
+                "articulo": 10,
+                "rubro": null
+              }
+            ]
+          },
+          {
+            "id": "R2",
+            "descripcion": "No hay cláusula de jurisdicción ni ley aplicable",
+            "detectado": true,
+            "textos_modelo": [
+              "Ausencia de jurisdicción pactada: La falta de cláusula jurisdiccional puede generar conflictos de competencia territorial, debiendo aplicarse las reglas supletorias del art. 2650 CCyCN, lo que aumenta costos y tiempos en caso de litigio."
+            ],
+            "requiere_cita": false,
+            "respaldado": null,
+            "citados": [
+              2650
+            ],
+            "respaldados": [],
+            "a_revisar": [
+              {
+                "articulo": 2650,
+                "rubro": null
+              }
+            ]
+          },
+          {
+            "id": "R3",
+            "descripcion": "Independencia / riesgo de recalificación de la relación como dependiente",
+            "detectado": false,
+            "textos_modelo": [],
+            "requiere_cita": true,
+            "respaldado": false,
+            "citados": [],
+            "respaldados": [],
+            "a_revisar": []
+          }
+        ],
+        "riesgos_adicionales": [
+          {
+            "texto": "Ausencia de cláusula de ajuste de honorarios: En un contrato de 6 meses con honorarios en dólares sin mecanismo de actualización, se vulnera el principio de equivalencia de las prestaciones (art. 1091 CCyCN) ante variaciones cambiarias o inflacionarias que puedan afectar la ecuación económica del contrato.",
+            "citados": [
+              1091
+            ]
+          },
+          {
+            "texto": "Falta de especificación de entregables y alcance: El objeto es genérico y no detalla entregables concretos, plazos intermedios ni criterios de cumplimiento, lo que puede generar conflictos interpretativos sobre el cumplimiento de la obligación de hacer (arts. 773 y 774 CCyCN).",
+            "citados": [
+              773,
+              774
+            ]
+          },
+          {
+            "texto": "Ausencia de cláusula de mora y consecuencias del incumplimiento: No se establece tasa de interés moratorio ni consecuencias del retraso en el pago, debiendo aplicarse supletoriamente el art. 768 CCyCN (tasa de interés) y art. 886 CCyCN (mora automática), generando incertidumbre para la consultora.",
+            "citados": [
+              768,
+              886
+            ]
+          },
+          {
+            "texto": "Confidencialidad unilateral excesiva: La cláusula de confidencialidad se extiende dos años post-contractuales solo para LA CONSULTORA, sin reciprocidad ni limitación razonable al tipo de información (art. 1002 CCyCN sobre información confidencial en tratativas), pudiendo configurar desequilibrio contractual.",
+            "citados": [
+              1002
+            ]
+          },
+          {
+            "texto": "Honorarios en moneda extranjera sin precisión de tipo de cambio: El pago en USD sin especificar tipo de cambio de referencia puede generar controversias (art. 765 CCyCN sobre obligaciones de dar sumas de dinero y art. 766 CCyCN sobre obligaciones en moneda extranjera).",
+            "citados": [
+              765,
+              766
+            ]
+          }
+        ]
+      },
+      "intentos": 1,
+      "tokens_entrada": 1415,
+      "tokens_salida": 1293,
+      "fallos": []
+    }
+  ]
+}

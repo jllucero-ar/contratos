@@ -19,3 +19,4 @@ venv/
 # Workspace y config local
 *.code-workspace
 CLAUDE.md
+evaluacion/revision/

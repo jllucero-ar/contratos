@@ -47,6 +47,7 @@ def evaluar_riesgos(riesgos_modelo: list[str], esperados: list[dict], referencia
             "id": esp["id"],
             "descripcion": esp["descripcion"],
             "detectado": bool(coinciden),
+            "textos_modelo": [riesgos_modelo[i] for i in coinciden],
             "requiere_cita": bool(aceptables),
             "respaldado": (bool(respaldados) if aceptables else None) if coinciden else False,
             "citados": citados,
@@ -54,7 +55,7 @@ def evaluar_riesgos(riesgos_modelo: list[str], esperados: list[dict], referencia
             "a_revisar": [{"articulo": a, "rubro": referencia.get(a)} for a in a_revisar],
         })
 
-    adicionales = [{"texto": riesgos_modelo[i][:160],
+    adicionales = [{"texto": riesgos_modelo[i],
                     "citados": sorted({int(a) for a in citas_ccycn_en(riesgos_modelo[i])})}
                    for i in range(len(riesgos_modelo)) if i not in usados]
     return {
