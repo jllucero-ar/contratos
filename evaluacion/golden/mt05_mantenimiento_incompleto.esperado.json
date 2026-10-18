@@ -1,0 +1,18 @@
+{
+  "id": "mt05_mantenimiento_incompleto",
+  "tipo": "servicios",
+  "trampa": "Contrato incompleto: no hay fechas, plazo ni precio definidos ('será acordado', 'será convenido'). El modelo debe devolver null (o a lo sumo repetir que está a convenir) y no inventar fechas ni importes.",
+  "campos": {
+    "partes.parte_a.nombre": {"contiene": ["Mantenimiento Integral"]},
+    "partes.parte_b.nombre": {"contiene": ["Edificio Plaza"]},
+    "partes.parte_a.rol": {"alguno": ["contratista", "prestador", "prestadora"]},
+    "partes.parte_b.rol": {"alguno": ["comitente", "cliente"]},
+    "plazo.inicio": {"nulo": true},
+    "plazo.vencimiento": {"nulo": true},
+    "plazo.duracion": {"nulo": true},
+    "canon.monto_inicial": {"permite_nulo": true, "alguno": ["convenir", "convenido", "acordar", "acordado"]},
+    "canon.ajuste": {"nulo": true},
+    "clausulas.mora": {"nulo": true},
+    "clausulas.jurisdiccion": {"contiene": ["Cordoba"]}
+  }
+}

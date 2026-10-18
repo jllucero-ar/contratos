@@ -1,0 +1,21 @@
+{
+  "id": "lc01_locacion_comercial",
+  "tipo": "locacion",
+  "trampa": "Caso base: todos los campos presentes. Sirve de línea de referencia.",
+  "campos": {
+    "partes.parte_a.nombre": {"contiene": ["Parque Logistico Norte"]},
+    "partes.parte_a.identificacion": {"contiene": ["30-70000001-1"]},
+    "partes.parte_a.rol": {"alguno": ["locador"]},
+    "partes.parte_b.nombre": {"contiene": ["Tecnoalimentos Argentina"]},
+    "partes.parte_b.identificacion": {"contiene": ["30-70000002-9"]},
+    "partes.parte_b.rol": {"alguno": ["locatario"]},
+    "plazo.inicio": {"contiene": ["febrero", "2026"], "no_contiene": ["enero"]},
+    "plazo.vencimiento": {"contiene": ["31", "enero", "2028"]},
+    "plazo.duracion": {"alguno": ["24", "veinticuatro"]},
+    "canon.monto_inicial": {"contiene": ["400.000"]},
+    "canon.ajuste": {"alguno": ["ICL", "Contratos de Locacion"], "contiene": ["semest"]},
+    "canon.vencimiento_pago": {"contiene": ["10"]},
+    "clausulas.mora": {"contiene": ["1,5"]},
+    "clausulas.jurisdiccion": {"contiene": ["Ciudad Autonoma de Buenos Aires"]}
+  }
+}

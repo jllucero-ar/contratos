@@ -1,0 +1,21 @@
+{
+  "id": "lv04_locacion_vivienda",
+  "tipo": "locacion",
+  "trampa": "Dos fechas (firma 10/12/2025 vs. inicio de vigencia 1/1/2026) y dos montos idénticos con distinto concepto (alquiler vs. depósito). Incluye DNI, teléfonos y emails para ejercitar la anonimización. Las partes son personas humanas (DNI, sin CUIT).",
+  "campos": {
+    "partes.parte_a.nombre": {"contiene": ["Roberto Gomez"]},
+    "partes.parte_a.identificacion": {"contiene": ["25.111.333"]},
+    "partes.parte_a.rol": {"alguno": ["locador"]},
+    "partes.parte_b.nombre": {"contiene": ["Marta Sanchez"]},
+    "partes.parte_b.identificacion": {"contiene": ["30.222.444"]},
+    "partes.parte_b.rol": {"alguno": ["locataria", "locatario"]},
+    "plazo.inicio": {"contiene": ["enero", "2026"], "no_contiene": ["diciembre de 2025"]},
+    "plazo.vencimiento": {"contiene": ["31", "diciembre", "2028"]},
+    "plazo.duracion": {"alguno": ["36", "treinta y seis"]},
+    "canon.monto_inicial": {"contiene": ["600.000"], "no_contiene": ["deposito", "garantia"]},
+    "canon.ajuste": {"contiene": ["IPC"], "alguno": ["4 meses", "cuatro meses", "cuatrimestral", "cada cuatro"]},
+    "canon.vencimiento_pago": {"contiene": ["5"]},
+    "clausulas.mora": {"contiene": ["0,5"]},
+    "clausulas.jurisdiccion": {"contiene": ["La Plata"]}
+  }
+}

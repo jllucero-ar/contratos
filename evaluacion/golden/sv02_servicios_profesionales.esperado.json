@@ -1,0 +1,20 @@
+{
+  "id": "sv02_servicios_profesionales",
+  "tipo": "servicios",
+  "trampa": "El contrato NO tiene ajuste de honorarios, cláusula de mora ni jurisdicción: el modelo debe devolver null y no inventar. Además, las partes son prestador/cliente (esquema genérico) y la fecha de firma (2 de marzo) no es la de inicio.",
+  "campos": {
+    "partes.parte_a.nombre": {"alguno": ["Fernandez"]},
+    "partes.parte_b.nombre": {"alguno": ["Editorial Austral"]},
+    "partes.parte_a.rol": {"alguno": ["consultora", "prestador", "prestadora", "locadora", "consultor"]},
+    "partes.parte_b.rol": {"alguno": ["cliente", "locatario"]},
+    "plazo.inicio": {"contiene": ["15", "marzo", "2026"]},
+    "plazo.vencimiento": {"contiene": ["14", "septiembre", "2026"]},
+    "plazo.duracion": {"alguno": ["6", "seis"]},
+    "canon.monto_inicial": {"contiene": ["3.000"], "alguno": ["USD", "dolares"]},
+    "canon.ajuste": {"nulo": true},
+    "canon.vencimiento_pago": {"contiene": ["10"]},
+    "clausulas.mora": {"nulo": true},
+    "clausulas.jurisdiccion": {"nulo": true},
+    "clausulas.rescision": {"contiene": ["15"]}
+  }
+}

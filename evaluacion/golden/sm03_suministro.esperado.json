@@ -1,0 +1,18 @@
+{
+  "id": "sm03_suministro",
+  "tipo": "suministro",
+  "trampa": "Montos y plazo escritos con letras ('dieciocho meses', 'CUATROCIENTOS CINCUENTA'), precio fijo (sin ajuste), jurisdicción por arbitraje en vez de tribunales. Un 'ajuste' inventado o una duración derivada de fechas son errores; el control de literalidad puede dar falsa alarma en la duración.",
+  "campos": {
+    "partes.parte_a.nombre": {"contiene": ["Granos del Litoral"]},
+    "partes.parte_a.rol": {"alguno": ["proveedor"]},
+    "partes.parte_b.nombre": {"contiene": ["Molinos Andinos"]},
+    "partes.parte_b.rol": {"alguno": ["comprador"]},
+    "plazo.inicio": {"contiene": ["1", "julio", "2026"]},
+    "plazo.vencimiento": {"contiene": ["31", "diciembre", "2027"]},
+    "plazo.duracion": {"alguno": ["18", "dieciocho"]},
+    "canon.monto_inicial": {"contiene": ["450"], "alguno": ["USD", "dolares"]},
+    "canon.ajuste": {"permite_nulo": true, "alguno": ["fijo", "sin ajuste", "no se ajusta", "no sera objeto"]},
+    "canon.vencimiento_pago": {"contiene": ["30"]},
+    "clausulas.jurisdiccion": {"contiene": ["Rosario"], "alguno": ["arbitraje", "Arbitraje"]}
+  }
+}
