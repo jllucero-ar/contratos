@@ -47,6 +47,7 @@ CONTRATOS/
 ├── contratos/
 │   ├── analizador.py      # Pipeline, prompt and PROMPT_VERSION
 │   └── esquema.py         # Pydantic output schema
+├── evaluacion/            # Golden set, comparator and evaluation runner
 ├── tests/                 # pytest suite (all AI calls are mocked)
 ├── data/                  # git-ignored: test/, json/, pdf/, logs/
 ├── main.py                # Entry point
@@ -198,6 +199,21 @@ pytest
 ```
 
 No test calls a real API: the provider SDKs and the analyzer's AI call are mocked, and all sample data is fictitious.
+
+---
+
+## Evaluation
+
+`evaluacion/` measures whether the analysis is *correct*, not just well-formed.
+
+- **Golden set** (`evaluacion/golden/`): 5 fictitious contracts (PDF + source text + hand-annotated expectations), each with a deliberate trap: fields the contract does not state (must stay `null`), amounts and terms written in words, two dates or two identical amounts with different meaning, and an incomplete framework contract. `parte_a`/`parte_b` follow the order of appearance in the contract header.
+- **Expectations** per field: `nulo`, `permite_nulo`, `contiene`, `no_contiene`, `alguno`. Matching ignores case and accents and tolerates number formatting (`$400.000` = `400000`).
+- **Runner:** `python evaluacion/evaluar.py [--casos lc01,sv02]` runs the analyzer on the set (this **calls the real provider API and consumes tokens**) and writes `evaluacion/reportes/eval_<timestamp>_<provider>-<model>_p<PROMPT_VERSION>.{json,md}`.
+- **Compare runs:** `python evaluacion/evaluar.py --comparar evaluacion/reportes/*.json` prints a table across providers, models and prompt versions (no API calls).
+
+Metrics: field accuracy, null-respect rate (how often the model refuses to invent what the contract does not say), invalid CCyCN citation rate, values not found in the source text, retries, errors and tokens.
+
+Limits: five contracts are a smoke test, not a benchmark; `contiene` checks key facts, not full-sentence quality; results vary between runs of the same model.
 
 ---
 

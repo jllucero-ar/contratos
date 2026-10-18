@@ -69,6 +69,9 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
     except Exception as e:  # el log nunca debe romper el análisis
         print(f"[analizador] ✗ No se pudo escribir el log de auditoría: {type(e).__name__}")
 
+    resultado["meta"] = {k: meta.get(k) for k in ("proveedor", "modelo", "intentos", "tokens_entrada", "tokens_salida")}
+    resultado["meta"]["prompt_version"] = PROMPT_VERSION
+
     return resultado
 
 
@@ -88,6 +91,7 @@ def _pipeline(path_pdf: str, path_output_json: str, path_output_pdf: str, meta: 
             - pdf_path:   ruta al PDF generado (o None)
             - exito:      bool
             - error:      str o None
+            - meta:       proveedor, modelo, prompt_version, intentos, tokens
     """
 
     # 1. Extraer texto del PDF
