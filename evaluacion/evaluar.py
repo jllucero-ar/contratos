@@ -23,6 +23,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from contratos import analizador
 from evaluacion.comparador import comparar_campo, es_nulo, valor_en_ruta
+from evaluacion.riesgos import cargar_referencia, evaluar_riesgos
 
 GOLDEN = Path(__file__).parent / "golden"
 REPORTES = Path(__file__).parent / "reportes"
@@ -54,6 +55,8 @@ def evaluar_caso(caso: dict, resultado: dict) -> dict:
                        "esperaba_nulo": bool(spec.get("nulo")),
                        "obtuvo_nulo": es_nulo(valor), "obtenido": valor})
 
+    riesgos = evaluar_riesgos(datos.get("riesgos") if exito else [], caso.get("riesgos_esperados", []),
+                              cargar_referencia())
     nulos = [c for c in campos if c["esperaba_nulo"]]
     citas = controles.get("citas_ccycn") or {}
     lit = controles.get("literalidad") or {}
@@ -70,6 +73,7 @@ def evaluar_caso(caso: dict, resultado: dict) -> dict:
         "citas_invalidas": len(citas.get("invalidas", [])),
         "literalidad_no_encontrados": len(lit.get("no_encontrados", [])),
         "literalidad_campos": [i["campo"] for i in lit.get("no_encontrados", [])],
+        "riesgos": riesgos,
         "intentos": meta.get("intentos") or 0,
         "tokens_entrada": meta.get("tokens_entrada") or 0,
         "tokens_salida": meta.get("tokens_salida") or 0,
@@ -91,6 +95,14 @@ def resumir(casos: list[dict]) -> dict:
         "citas_encontradas": sum(c["citas_encontradas"] for c in casos),
         "tasa_citas_invalidas": tasa(sum(c["citas_invalidas"] for c in casos), sum(c["citas_encontradas"] for c in casos)),
         "literalidad_no_encontrados": sum(c["literalidad_no_encontrados"] for c in casos),
+        "riesgos_esperados": sum(c["riesgos"]["esperados"] for c in casos),
+        "riesgos_detectados": sum(c["riesgos"]["detectados"] for c in casos),
+        "recall_riesgos": tasa(sum(c["riesgos"]["detectados"] for c in casos), sum(c["riesgos"]["esperados"] for c in casos)),
+        "riesgos_con_cita_respaldada": tasa(sum(c["riesgos"]["respaldados"] for c in casos),
+                                            sum(c["riesgos"]["requieren_cita"] for c in casos)),
+        "citas_de_riesgos_a_revisar": sum(c["riesgos"]["citas_a_revisar"] for c in casos),
+        "citas_de_riesgos_evaluadas": sum(c["riesgos"]["citas_evaluadas"] for c in casos),
+        "riesgos_adicionales": sum(len(c["riesgos"]["riesgos_adicionales"]) for c in casos),
         "reintentos": sum(max(c["intentos"] - 1, 0) for c in casos),
         "tokens_entrada": sum(c["tokens_entrada"] for c in casos),
         "tokens_salida": sum(c["tokens_salida"] for c in casos),
@@ -134,6 +146,10 @@ def a_markdown(rep: dict) -> str:
         f"| Exactitud de campos | {pct(r['exactitud_campos'])} |",
         f"| Respeto de nulos (no inventar) | {pct(r['respeto_de_nulos'])} |",
         f"| Citas CCyCN inválidas | {pct(r['tasa_citas_invalidas'])} de {r['citas_encontradas']} |",
+        f"| Riesgos esperados detectados (recall) | {pct(r['recall_riesgos'])} ({r['riesgos_detectados']}/{r['riesgos_esperados']}) |",
+        f"| Riesgos detectados con artículo anotado como correcto | {pct(r['riesgos_con_cita_respaldada'])} |",
+        f"| Citas de riesgos a revisar a mano | {r['citas_de_riesgos_a_revisar']} de {r['citas_de_riesgos_evaluadas']} |",
+        f"| Riesgos adicionales del modelo (sin anotar) | {r['riesgos_adicionales']} |",
         f"| Valores no hallados en el texto (literalidad) | {r['literalidad_no_encontrados']} |",
         f"| Casos con error | {r['casos_con_error']} |",
         f"| Reintentos | {r['reintentos']} |",
@@ -144,6 +160,14 @@ def a_markdown(rep: dict) -> str:
     for c in rep["casos"]:
         out.append(f"| {c['id']} | {c['campos_ok']}/{c['campos_total']} | {c['nulos_respetados']}/{c['nulos_esperados']} "
                    f"| {c['citas_invalidas']}/{c['citas_encontradas']} | {c['literalidad_no_encontrados']} | {c['intentos']} |")
+    out += ["\n## Riesgos\n", "| Caso | Riesgo esperado | Detectado | Artículo respaldado | Citados | A revisar |",
+            "|---|---|---|---|---|---|"]
+    for c in rep["casos"]:
+        for d in c["riesgos"]["detalle"]:
+            resp = "n/a" if d["respaldado"] is None else ("sí" if d["respaldado"] else "no")
+            revisar = ", ".join(f"{a['articulo']} ({a['rubro'] or 'sin rubro en referencia'})" for a in d["a_revisar"]) or "—"
+            out.append(f"| {c['id']} | {d['id']} {d['descripcion']} | {'sí' if d['detectado'] else 'NO'} | {resp} "
+                       f"| {', '.join(map(str, d['citados'])) or '—'} | {revisar} |")
     fallos = [(c["id"], f) for c in rep["casos"] for f in c["fallos"]]
     if fallos:
         out += ["\n## Fallos\n", "| Caso | Campo | Motivo | Obtenido |", "|---|---|---|---|"]

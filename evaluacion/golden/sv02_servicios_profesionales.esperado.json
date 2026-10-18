@@ -16,5 +16,11 @@
     "clausulas.mora": {"nulo": true},
     "clausulas.jurisdiccion": {"nulo": true},
     "clausulas.rescision": {"contiene": ["15"]}
-  }
+  },
+  "revision_juridica": {"estado": "propuesta_pendiente_de_revision_juridica", "nota": "Palabras clave y artículos aceptables redactados como borrador; deben ser validados por un abogado contra el texto vigente del CCyCN."},
+  "riesgos_esperados": [
+    {"id": "R1", "descripcion": "Rescisión sin causa con preaviso de 15 días y sin indemnización", "alguno": ["sin expresion de causa", "sin indemnizacion", "desistimiento", "rescision", "preaviso"], "articulos": [1261, 1077, 1078]},
+    {"id": "R2", "descripcion": "No hay cláusula de jurisdicción ni ley aplicable", "alguno": ["jurisdiccion", "competencia", "tribunal", "ley aplicable"], "articulos": []},
+    {"id": "R3", "descripcion": "Independencia / riesgo de recalificación de la relación como dependiente", "alguno": ["dependencia", "independencia", "laboral", "recalific"], "articulos": [1251, 1252]}
+  ]
 }

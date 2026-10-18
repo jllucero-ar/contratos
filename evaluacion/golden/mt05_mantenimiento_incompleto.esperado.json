@@ -14,5 +14,10 @@
     "canon.ajuste": {"nulo": true},
     "clausulas.mora": {"nulo": true},
     "clausulas.jurisdiccion": {"contiene": ["Cordoba"]}
-  }
+  },
+  "revision_juridica": {"estado": "propuesta_pendiente_de_revision_juridica", "nota": "Palabras clave y artículos aceptables redactados como borrador; deben ser validados por un abogado contra el texto vigente del CCyCN."},
+  "riesgos_esperados": [
+    {"id": "R1", "descripcion": "Plazo y precio indeterminados (a acordar por adenda / por orden de trabajo)", "alguno": ["indetermin", "a convenir", "convenido", "adenda", "sin plazo", "precio"], "articulos": [1255, 1251, 1279]},
+    {"id": "R2", "descripcion": "Responsabilidad de la contratista sin tope y exigencia de seguro", "alguno": ["responsabilidad", "seguro", "danos"], "articulos": [1256, 1743]}
+  ]
 }

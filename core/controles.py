@@ -224,3 +224,12 @@ def verificar_literalidad(datos: dict, texto_fuente: str) -> dict:
         "no_encontrados": no_encontrados,
         "paso": not no_encontrados,
     }
+
+
+def citas_ccycn_en(texto: str) -> list[str]:
+    """Artículos del CCyCN citados en `texto` con formato válido y dentro de rango (sin duplicados)."""
+    vistos: list[str] = []
+    for c in _extraer_citas(texto):
+        if c["norma"] == "ccycn" and not c["motivo"] and c["valor"] not in vistos:
+            vistos.append(c["valor"])
+    return vistos

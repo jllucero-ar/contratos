@@ -17,5 +17,10 @@
     "canon.vencimiento_pago": {"contiene": ["10"]},
     "clausulas.mora": {"contiene": ["1,5"]},
     "clausulas.jurisdiccion": {"contiene": ["Ciudad Autonoma de Buenos Aires"]}
-  }
+  },
+  "revision_juridica": {"estado": "propuesta_pendiente_de_revision_juridica", "nota": "Palabras clave y artículos aceptables redactados como borrador; deben ser validados por un abogado contra el texto vigente del CCyCN."},
+  "riesgos_esperados": [
+    {"id": "R1", "descripcion": "Mora automática sin interpelación con interés punitorio del 1,5% mensual", "alguno": ["mora automatica", "interpelacion", "punitorio", "1,5"], "articulos": [886, 768, 769, 771]},
+    {"id": "R2", "descripcion": "Exoneración de responsabilidad del locador por caso fortuito / fuerza mayor", "alguno": ["fortuito", "fuerza mayor", "exoneracion", "limitacion de responsabilidad"], "articulos": [1743, 1201, 1203]}
+  ]
 }

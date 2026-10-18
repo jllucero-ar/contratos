@@ -17,5 +17,11 @@
     "canon.vencimiento_pago": {"contiene": ["5"]},
     "clausulas.mora": {"contiene": ["0,5"]},
     "clausulas.jurisdiccion": {"contiene": ["La Plata"]}
-  }
+  },
+  "revision_juridica": {"estado": "propuesta_pendiente_de_revision_juridica", "nota": "Palabras clave y artículos aceptables redactados como borrador; deben ser validados por un abogado contra el texto vigente del CCyCN."},
+  "riesgos_esperados": [
+    {"id": "R1", "descripcion": "Interés punitorio del 0,5% diario (desproporcionado)", "alguno": ["punitorio", "0,5", "diario"], "articulos": [768, 769, 771, 988]},
+    {"id": "R2", "descripcion": "Preaviso de 60 días para que la locataria resuelva (más gravoso que el régimen legal)", "alguno": ["60", "sesenta", "preaviso", "resolucion anticipada"], "articulos": [1221, 1196]},
+    {"id": "R3", "descripcion": "Depósito en garantía sin plazo de devolución ni actualización", "alguno": ["deposito"], "articulos": []}
+  ]
 }

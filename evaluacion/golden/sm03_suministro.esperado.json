@@ -14,5 +14,11 @@
     "canon.ajuste": {"permite_nulo": true, "alguno": ["fijo", "sin ajuste", "no se ajusta", "no sera objeto"]},
     "canon.vencimiento_pago": {"contiene": ["30"]},
     "clausulas.jurisdiccion": {"contiene": ["Rosario"], "alguno": ["arbitraje", "Arbitraje"]}
-  }
+  },
+  "revision_juridica": {"estado": "propuesta_pendiente_de_revision_juridica", "nota": "Palabras clave y artículos aceptables redactados como borrador; deben ser validados por un abogado contra el texto vigente del CCyCN."},
+  "riesgos_esperados": [
+    {"id": "R1", "descripcion": "Limitación de la responsabilidad del proveedor al valor de la partida no entregada", "alguno": ["valor de la partida", "limitacion de responsabilidad", "limita la responsabilidad", "limitada"], "articulos": [1743, 988]},
+    {"id": "R2", "descripcion": "Precio fijo en dólares por 18 meses sin ajuste (riesgo de desequilibrio / imprevisión)", "alguno": ["precio fijo", "imprevision", "onerosidad", "desequilibrio", "fluctuacion", "variacion"], "articulos": [1091]},
+    {"id": "R3", "descripcion": "Plazo muy breve (48 horas) para rechazar partidas", "alguno": ["48 horas", "rechazar", "rechazo"], "articulos": []}
+  ]
 }
