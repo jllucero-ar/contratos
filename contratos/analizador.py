@@ -25,7 +25,8 @@ from core.pdf_report import generar_reporte
 
 # Subir SIEMPRE que cambie SISTEMA, el esquema (contratos/esquema.py) o _construir_prompt.
 # 1.0 = prompt original (sin versionar) · 2.0 = esquema Pydantic genérico (parte_a/parte_b), JSON con todas las claves
-PROMPT_VERSION = "2.0"  # sin cambios: el control de literalidad no toca el prompt
+# 2.1 = parte_a/parte_b se definen por orden de aparición en el encabezamiento (antes: por rol, ambiguo)
+PROMPT_VERSION = "2.1"
 
 
 # --- Prompt del sistema ---

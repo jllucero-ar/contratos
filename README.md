@@ -13,7 +13,7 @@ Built as part of a legal engineering portfolio.
 3. **Outputs** a structured JSON file and a formatted PDF report
 
 The analysis covers:
-- Parties and identification (`parte_a` / `parte_b`: name, tax ID, role — works for any contract type)
+- Parties and identification (`parte_a` / `parte_b`: name, tax ID, role — works for any contract type; A and B follow the order in which the parties appear in the contract header, the role field says who is who)
 - Object and purpose
 - Term and renewal conditions
 - Price and adjustment mechanisms

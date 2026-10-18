@@ -66,3 +66,17 @@ def test_datos_ficticios():
             assert mail.endswith(".example"), mail
         for cuit in re.findall(r"\b30-\d{8}-\d\b", contenido):
             assert cuit.startswith("30-7000000"), cuit
+
+
+@pytest.mark.parametrize("caso", CASOS)
+def test_parte_a_aparece_antes_que_parte_b(caso):
+    """Convención: parte_a/parte_b van por orden de aparición en el contrato (no por rol)."""
+    texto = _normalizar((GOLDEN / f"{caso}.txt").read_text(encoding="utf-8"))
+    esperado = json.loads((GOLDEN / f"{caso}.esperado.json").read_text(encoding="utf-8"))["campos"]
+
+    def posicion(campo):
+        spec = esperado[campo]
+        tokens = spec.get("contiene") or spec.get("alguno")
+        return min(texto.find(_normalizar(t)) for t in tokens)
+
+    assert 0 <= posicion("partes.parte_a.nombre") < posicion("partes.parte_b.nombre")

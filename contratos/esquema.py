@@ -24,8 +24,8 @@ class Parte(_Base):
 
 
 class Partes(_Base):
-    parte_a: Parte = Field(description="primera parte (quien da, presta, vende o encarga)")
-    parte_b: Parte = Field(description="segunda parte (quien recibe, paga o contrata)")
+    parte_a: Parte = Field(description="primera parte nombrada en el encabezamiento del contrato (por orden de aparición, sin importar su rol)")
+    parte_b: Parte = Field(description="segunda parte nombrada en el encabezamiento del contrato (por orden de aparición, sin importar su rol)")
 
 
 class Plazo(_Base):
