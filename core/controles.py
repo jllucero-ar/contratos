@@ -8,6 +8,7 @@ lo que afirma el análisis.
 """
 
 import re
+import unicodedata
 
 ART_MIN = 1
 ART_MAX = 2671  # último artículo del CCyCN (Ley 26.994)
@@ -137,3 +138,89 @@ def _analizar_lista(lista: str) -> list[tuple[str, str | None]]:
         resultado.append((str(numero), motivo))
 
     return resultado
+
+
+# --- Control de literalidad -------------------------------------------------------------------
+#
+# Verifica que ciertos valores "extraídos" aparezcan en el texto del contrato. Detecta valores
+# inventados o alterados; NO verifica que estén bien interpretados. Solo mira campos que deberían
+# copiarse del contrato (nombres, identificaciones, fechas, plazos, montos). Los campos de texto
+# libre (objeto, cláusulas, riesgos) son paráfrasis y no se controlan.
+
+CAMPOS_NOMBRE = (
+    ("partes", "parte_a", "nombre"),
+    ("partes", "parte_b", "nombre"),
+)
+CAMPOS_NUMERICOS = (
+    ("partes", "parte_a", "identificacion"),
+    ("partes", "parte_b", "identificacion"),
+    ("plazo", "inicio"),
+    ("plazo", "vencimiento"),
+    ("plazo", "duracion"),
+    ("canon", "monto_inicial"),
+    ("canon", "vencimiento_pago"),
+)
+_RE_NUM_VALOR = re.compile(r"\d+(?:[.,\-/]\d+)*")
+_MIN_DIGITOS = 2  # los números de 1 dígito ("3 años") se ignoran: coinciden con casi cualquier texto
+_STOP_NOMBRE = {"sa", "srl", "sas", "s", "a", "l", "r", "de", "del", "la", "el", "y", "e", "los", "las"}
+
+
+def _normalizar(texto: str) -> str:
+    texto = unicodedata.normalize("NFKD", texto)
+    texto = "".join(c for c in texto if not unicodedata.combining(c)).lower()
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", texto).split())
+
+
+def _valor(datos: dict, ruta: tuple):
+    for clave in ruta:
+        if not isinstance(datos, dict):
+            return None
+        datos = datos.get(clave)
+    return datos if isinstance(datos, str) and datos.strip() else None
+
+
+def verificar_literalidad(datos: dict, texto_fuente: str) -> dict:
+    """
+    Returns:
+        {"verificados": int, "no_verificables": int,
+         "no_encontrados": [{"campo": "plazo.inicio", "motivo": "numero_no_encontrado"|"nombre_no_encontrado"}],
+         "paso": bool}
+    """
+    # Texto con los separadores entre dígitos eliminados: "1.250.000" -> "1250000", "30-71234567-8" -> "30712345678"
+    compacto = re.sub(r"(?<=\d)[.,\-/\s](?=\d)", "", texto_fuente)
+    normalizado = _normalizar(texto_fuente)
+    palabras_texto = set(normalizado.split())
+
+    verificados = 0
+    no_verificables = 0
+    no_encontrados = []
+
+    for ruta in CAMPOS_NOMBRE:
+        valor = _valor(datos, ruta)
+        if valor is None:
+            continue
+        verificados += 1
+        n = _normalizar(valor)
+        palabras = [p for p in n.split() if p not in _STOP_NOMBRE and len(p) >= 2]
+        if n not in normalizado and not (palabras and all(p in palabras_texto for p in palabras)):
+            no_encontrados.append({"campo": ".".join(ruta), "motivo": "nombre_no_encontrado"})
+
+    for ruta in CAMPOS_NUMERICOS:
+        valor = _valor(datos, ruta)
+        if valor is None:
+            continue
+        numeros = [re.sub(r"\D", "", t) for t in _RE_NUM_VALOR.findall(valor)]
+        numeros = [n for n in numeros if len(n) >= _MIN_DIGITOS]
+        if not numeros:
+            no_verificables += 1
+            continue
+        verificados += 1
+        if not all(re.search(rf"(?<!\d){n}(?!\d)", compacto) for n in numeros):
+            no_encontrados.append({"campo": ".".join(ruta), "motivo": "numero_no_encontrado"})
+
+    return {
+        "verificados": verificados,
+        "no_verificables": no_verificables,
+        "no_encontrados": no_encontrados,
+        "paso": not no_encontrados,
+    }

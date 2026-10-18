@@ -17,7 +17,7 @@ from pydantic import ValidationError
 from contratos.esquema import AnalisisContrato, plantilla_json, resumir_errores
 from core import audit_log
 from core.anonimizador import Anonimizador
-from core.controles import verificar_citas_ccycn
+from core.controles import verificar_citas_ccycn, verificar_literalidad
 from core.extractor import extraer_texto
 from core.ia_client import llamar_ia
 from core.pdf_report import generar_reporte
@@ -25,7 +25,7 @@ from core.pdf_report import generar_reporte
 
 # Subir SIEMPRE que cambie SISTEMA, el esquema (contratos/esquema.py) o _construir_prompt.
 # 1.0 = prompt original (sin versionar) · 2.0 = esquema Pydantic genérico (parte_a/parte_b), JSON con todas las claves
-PROMPT_VERSION = "2.0"
+PROMPT_VERSION = "2.0"  # sin cambios: el control de literalidad no toca el prompt
 
 
 # --- Prompt del sistema ---
@@ -48,7 +48,7 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
     haya salido bien o mal. El log no contiene texto del contrato ni datos personales.
     """
     meta = {"intentos": 0, "esquema_valido": False, "respuesta_completa": True,
-            "citas_ccycn": None, "anonimizacion": None}
+            "citas_ccycn": None, "literalidad": None, "anonimizacion": None}
     resultado = _pipeline(path_pdf, path_output_json, path_output_pdf, meta)
 
     try:
@@ -60,7 +60,7 @@ def analizar_contrato(path_pdf: str, path_output_json: str = None, path_output_p
             tokens_entrada=meta.get("tokens_entrada"),
             tokens_salida=meta.get("tokens_salida"),
             intentos=meta["intentos"],
-            controles={k: meta[k] for k in ("esquema_valido", "respuesta_completa", "citas_ccycn", "anonimizacion")},
+            controles={k: meta[k] for k in ("esquema_valido", "respuesta_completa", "citas_ccycn", "literalidad", "anonimizacion")},
             exito=resultado["exito"],
             error_codigo=meta.get("error_codigo"),
         )
@@ -132,9 +132,21 @@ def _pipeline(path_pdf: str, path_output_json: str, path_output_pdf: str, meta: 
     }
     meta["anonimizacion"] = dict(datos["anonimizacion"])
 
+    # 6. Literalidad: los valores copiados del contrato deben figurar en el texto original
+    literalidad = verificar_literalidad(datos, extraccion["texto"])
+    datos["controles"]["literalidad"] = literalidad
+    datos["controles"]["paso"] = datos["controles"]["citas_ccycn"]["paso"] and literalidad["paso"]
+    meta["literalidad"] = {"paso": literalidad["paso"], "verificados": literalidad["verificados"],
+                           "no_encontrados": len(literalidad["no_encontrados"])}
+    if literalidad["paso"]:
+        print(f"[analizador] ✓ Literalidad: {literalidad['verificados']} campos verificados en el texto")
+    else:
+        print(f"[analizador] ⚠ Literalidad: no se encontraron en el contrato: "
+              f"{[i['campo'] for i in literalidad['no_encontrados']]}")
+
     resultado = {"datos": datos, "json_path": None, "pdf_path": None, "exito": True, "error": None}
 
-    # 6. Guardar JSON
+    # 7. Guardar JSON
     if path_output_json:
         try:
             Path(path_output_json).parent.mkdir(parents=True, exist_ok=True)
@@ -145,7 +157,7 @@ def _pipeline(path_pdf: str, path_output_json: str, path_output_pdf: str, meta: 
         except Exception as e:
             print(f"[analizador] ✗ Error guardando JSON: {e}")
 
-    # 7. Generar PDF
+    # 8. Generar PDF
     if path_output_pdf:
         rep = generar_reporte(datos, path_output_pdf)
         if rep["exito"]:
